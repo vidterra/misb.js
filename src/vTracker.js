@@ -1,0 +1,92 @@
+const klv = require('./klv')
+
+module.exports.parse = function (buffer, options = {}) {
+	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
+	const values = {}
+
+	options.debug === true && console.debug('-------Start Parse vTracker-------')
+	options.debug === true && process.stdout.write(`Buffer ${buffer.toString('hex')} ${buffer.length}\n`)
+
+	let i = 0
+	const berHeader = 1
+	const berLength = 1
+	while (i < packet.length) {
+		const key = packet[i]
+		const contentLength = packet[i + berLength]
+
+		if (packet.length < i + berHeader + berLength + contentLength) {
+			throw new Error('Invalid vTracker buffer, not enough content')
+		}
+
+		const valueBuffer = packet.subarray(i + berHeader + berLength, i + berHeader + berLength + contentLength)
+		const parsed = convert(key, valueBuffer)
+
+		if(typeof parsed.value === 'string') {
+			parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
+		}
+
+		if (options.debug === true) {
+			console.debug(key, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
+			parsed.packet = valueBuffer
+		}
+
+		if(options.verbose) {
+			values[key] = parsed
+		} else {
+			values[key] = parsed.value
+		}
+
+		i += berHeader + berLength + contentLength // advance past key, length and value bytes
+	}
+	options.debug === true && console.debug('-------End Parse vTracker---------')
+	return values
+}
+
+function convert(key, buffer) {
+	const data = {
+		key,
+	}
+	try {
+		switch (key) {
+			case 1:
+				klv.checkRequiredSize(key, buffer, 16)
+				return {
+					...data,
+					name: 'Track ID',
+					value: klv.readVariableUInt(buffer, buffer.length)
+				}
+			case 3:
+				klv.checkRequiredSize(key, buffer, 8)
+				return {
+					...data,
+					name: 'Start Time',
+					value: parseFloat(buffer.readBigUInt64BE(0)),
+					unit: 'µs'
+				}
+			case 4:
+				klv.checkRequiredSize(key, buffer, 8)
+				return {
+					...data,
+					name: 'End Time',
+					value: parseFloat(buffer.readBigUInt64BE(0)),
+					unit: 'µs'
+				}
+			case 9:
+				return {
+					...data,
+					name: 'TrackHistorySeries', // todo implement
+					value: buffer.toString()
+				}
+			case 10:
+				return {
+					...data,
+					name: 'Velocity', // todo implement
+					value: buffer.toString()
+				}
+			default:
+				throw Error(`Key ${key} not found`)
+		}
+	} catch (e) {
+		throw e
+	}
+}

@@ -1,0 +1,31 @@
+{
+	"name": "@vidterra/misb.js",
+	"version": "0.0.1",
+	"description": "Lightweight JavaScript library for parsing and manipulating MISB KLV metadata",
+	"main": "index.js",
+	"scripts": {
+		"test": "jest"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/vidterra/misb.js.git"
+	},
+	"keywords": [
+		"klv",
+		"misb",
+		"0601",
+		"0903",
+		"isr",
+		"video",
+		"4609"
+	],
+	"author": "Dillon Bussert",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/vidterra/misb.js/issues"
+	},
+	"homepage": "https://github.com/vidterra/misb.js#readme",
+	"devDependencies": {
+		"jest": "^26.6.3"
+	}
+}
