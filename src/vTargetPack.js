@@ -22,7 +22,15 @@ module.exports.parse = function (buffer, options = {}) {
 		i++
 	} while (read >>> 7 === 1)
 
-	values.targetId = targetId
+	if(options.verbose) {
+		values.targetId = {
+			key: 0,
+			name: 'Target ID',
+			value: targetId
+		}
+	} else {
+		values.targetId = targetId
+	}
 	options.debug === true && console.debug('Target', targetId)
 
 	while (i < packet.length) {

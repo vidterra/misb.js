@@ -884,7 +884,7 @@ const convert = (key, buffer, options) => {
 				return {
 					...data,
 					name: st0601data(key).name,
-					value: null,
+					value: 'Not Implemented',
 					unit: '%'
 				}
 			case 123:
