@@ -159,18 +159,12 @@ function convert(key, buffer, options) {
 					value: JSON.stringify(localSet)
 				}
 			}
-		/*case 12:
+		case 12:
 			const poiSet = PoiLocalSet.parse(buffer, options)
 			return {
 				...data,
 				name: st0806data(key).name,
 				value: poiSet,
-			}*/
-		case 12:
-			return {
-				...data,
-				name: st0806data(key).name,
-				value: buffer.toString(), // todo parse 0806 poi
 			}
 		case 18:
 			klv.checkRequiredSize(key, buffer, 1)
