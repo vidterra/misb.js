@@ -124,45 +124,45 @@ function convert(key, buffer, options) {
 				}
 			case 4:
 				klv.checkMaxSize(key, buffer, 2)
-				data.value = klv.readVariableUInt(buffer, buffer.length)
 				return {
 					key,
 					name: 'VMTI Version Number',
+					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 5:
 				klv.checkMaxSize(key, buffer, 3)
-				data.value = klv.readVariableUInt(buffer, buffer.length)
 				return {
 					key,
 					name: 'Total Number Targets Reported',
+					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 6:
 				klv.checkMaxSize(key, buffer, 3)
-				data.value = klv.readVariableUInt(buffer, buffer.length)
 				return {
 					key,
 					name: 'Number Targets Reported',
+					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 7:
 				klv.checkMaxSize(key, buffer, 3)
-				data.value = klv.readVariableUInt(buffer, buffer.length)
 				return {
 					key,
 					name: 'Motion Imagery Frame Num',
+					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 8:
 				klv.checkMaxSize(key, buffer, 3)
-				data.value = klv.readVariableUInt(buffer, buffer.length)
 				return {
 					key,
 					name: 'Frame Width',
+					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 9:
 				klv.checkMaxSize(key, buffer, 3)
-				data.value = klv.readVariableUInt(buffer, buffer.length)
 				return {
 					key,
 					name: 'Frame Height',
+					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 10:
 				klv.checkMaxSize(key, buffer, 128)
