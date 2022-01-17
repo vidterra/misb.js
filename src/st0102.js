@@ -133,49 +133,49 @@ function convert(key, buffer, options) {
 			return data
 		case 3:
 			return {
-				...data,
+				key,
 				name: 'Classifying Country',
 				value: buffer.toString()
 			}
 		case 4:
 			return {
-				...data,
+				key,
 				name: 'Security Information',
 				value: buffer.toString()
 			}
 		case 5:
 			return {
-				...data,
+				key,
 				name: 'Caveats',
 				value: buffer.toString()
 			}
 		case 6:
 			return {
-				...data,
+				key,
 				name: 'Releasing Instructions',
 				value: buffer.toString()
 			}
 		case 7:
 			return {
-				...data,
+				key,
 				name: 'Classified By',
 				value: buffer.toString()
 			}
 		case 8:
 			return {
-				...data,
+				key,
 				name: 'Derived From',
 				value: buffer.toString()
 			}
 		case 9:
 			return {
-				...data,
+				key,
 				name: 'Classification Reason',
 				value: buffer.toString()
 			}
 		case 11:
 			return {
-				...data,
+				key,
 				name: 'Classification and Marking System',
 				value: buffer.toString()
 			}
@@ -238,40 +238,40 @@ function convert(key, buffer, options) {
 			return data
 		case 13:
 			return {
-				...data,
+				key,
 				name: 'Object Country Codes',
 				value: buffer.toString()
 			}
 		case 14:
 			return {
-				...data,
+				key,
 				name: 'Classification Comments',
 				value: buffer.toString()
 			}
 		case 19:
 			klv.checkRequiredSize(key, buffer, 1)
 			return {
-				...data,
+				key,
 				name: 'Stream ID',
 				value: buffer.readUInt8(0)
 			}
 		case 20:
 			klv.checkRequiredSize(key, buffer, 2)
 			return {
-				...data,
+				key,
 				name: 'Transport Stream ID',
 				value: buffer.readUInt16BE(0)
 			}
 		case 21:
 			klv.checkRequiredSize(key, buffer, 16)
 			return {
-				...data,
+				key,
 				name: 'Item Designator ID',
 				value: buffer.toString()
 			}
 		case 22:
 			return {
-				...data,
+				key,
 				name: 'Version',
 				value: buffer.readUInt16BE(0)
 			}

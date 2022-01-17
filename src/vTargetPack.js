@@ -66,82 +66,79 @@ module.exports.parse = function (buffer, options = {}) {
 }
 
 function convert(key, buffer, options) {
-	const data = {
-		key,
-	}
 	try {
 		switch (key) {
 			case 1:
 				klv.checkMaxSize(key, buffer, 6)
 				return {
-					...data,
+					key,
 					name: 'Target Centroid',
 					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 2:
 				klv.checkMaxSize(key, buffer, 6)
 				return {
-					...data,
+					key,
 					name: 'Boundary Top Left',
 					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 3:
 				klv.checkMaxSize(key, buffer, 6)
 				return {
-					...data,
+					key,
 					name: 'Boundary Bottom Right',
 					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 5:
 				klv.checkMaxSize(key, buffer, 6)
 				return {
-					...data,
+					key,
 					name: 'Target Confidence Level',
 					value: buffer.readUInt8(0)
 				}
 			case 17:
 				klv.checkRequiredSize(key, buffer, 22)
 				return {
-					...data,
+					key,
 					name: 'Target Location',
 					value: Location.parse(buffer, options)
 				}
 			case 19:
 				klv.checkMaxSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: 'Centroid Pix Row',
 					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 20:
 				klv.checkMaxSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: 'Centroid Pix Col',
 					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 22:
 				klv.checkMaxSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: 'Algorithm ID',
 					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 102:
 				return {
-					...data,
+					key,
 					name: 'VObject',
 					value: vObject.parse(buffer, options)
 				}
 			case 104:
 				return {
-					...data,
+					key,
 					name: 'VTracker',
 					value: vTracker.parse(buffer, options)
 				}
 			case 107:
 				return {
-					...data,
+					key,
 					name: 'vObjectSeries',
 					value: vObjectSeries.parse(buffer, options)
 				}

@@ -66,39 +66,36 @@ module.exports.parse = function (buffer, options = {}) {
 }
 
 function convert(key, buffer) {
-	const data = {
-		key,
-	}
 	try {
 		switch (key) {
 			case 1:
 				klv.checkMaxSize(key, buffer, 3)
 				return {
-					...data,
+					key,
 					name: 'ID',
 					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 2:
 				return {
-					...data,
+					key,
 					name: 'Name',
 					value: buffer.toString()
 				}
 			case 3:
 				return {
-					...data,
+					key,
 					name: 'Version',
 					value: buffer.toString()
 				}
 			case 4:
 				return {
-					...data,
+					key,
 					name: 'Class',
 					value: buffer.toString()
 				}
 			case 5:
 				return {
-					...data,
+					key,
 					name: 'nFrames',
 					value: klv.readVariableUInt(buffer, buffer.length)
 				}

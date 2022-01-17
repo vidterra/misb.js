@@ -161,42 +161,39 @@ const bnToBuf = (bn, size) => {
 }
 
 const convert = (key, buffer, options) => {
-	const data = {
-		key,
-	}
 	try {
 		switch (key) {
 			case 1:
 				klv.checkRequiredSize(key, buffer, st0601data(key).length)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.readUInt16BE(0)
 				}
 			case 2:
 				klv.checkRequiredSize(key, buffer, st0601data(key).length)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: parseFloat(buffer.readBigUInt64BE(0)),
 					unit: 'µs'
 				}
 			case 3:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.toString()
 				}
 			case 4:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.toString()
 				}
 			case 5:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [0, 360]),
 					unit: '°'
@@ -204,7 +201,7 @@ const convert = (key, buffer, options) => {
 			case 6:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-20, 20]),
 					unit: '°'
@@ -212,7 +209,7 @@ const convert = (key, buffer, options) => {
 			case 7:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-50, 50]),
 					unit: '°'
@@ -220,7 +217,7 @@ const convert = (key, buffer, options) => {
 			case 8:
 				klv.checkRequiredSize(key, buffer, 1)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.readUInt8(0),
 					unit: 'm/s'
@@ -228,33 +225,33 @@ const convert = (key, buffer, options) => {
 			case 9:
 				klv.checkRequiredSize(key, buffer, 1)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.readUInt8(0),
 					unit: 'm/s'
 				}
 			case 10:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.toString()
 				}
 			case 11:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.toString()
 				}
 			case 12:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.toString()
 				}
 			case 13:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-90, 90]),
 					unit: '°'
@@ -262,7 +259,7 @@ const convert = (key, buffer, options) => {
 			case 14:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-180, 180]),
 					unit: '°'
@@ -270,7 +267,7 @@ const convert = (key, buffer, options) => {
 			case 15:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [-900, 19000]),
 					unit: 'm'
@@ -278,7 +275,7 @@ const convert = (key, buffer, options) => {
 			case 16:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [0, 180]),
 					unit: '°'
@@ -286,7 +283,7 @@ const convert = (key, buffer, options) => {
 			case 17:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [0, 180]),
 					unit: '°'
@@ -294,7 +291,7 @@ const convert = (key, buffer, options) => {
 			case 18:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt32BE(0), [0, 2 ** 32 - 1], [0, 360]),
 					unit: '°'
@@ -302,7 +299,7 @@ const convert = (key, buffer, options) => {
 			case 19:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-180, 180]),
 					unit: '°'
@@ -310,7 +307,7 @@ const convert = (key, buffer, options) => {
 			case 20:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt32BE(0), [0, 2 ** 32 - 1], [0, 360]),
 					unit: '°'
@@ -318,7 +315,7 @@ const convert = (key, buffer, options) => {
 			case 21:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt32BE(0), [0, 2 ** 32 - 1], [0, 5000000]),
 					unit: 'm'
@@ -326,7 +323,7 @@ const convert = (key, buffer, options) => {
 			case 22:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [0, 10000]),
 					unit: 'm'
@@ -334,7 +331,7 @@ const convert = (key, buffer, options) => {
 			case 23:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-90, 90]),
 					unit: '°'
@@ -342,7 +339,7 @@ const convert = (key, buffer, options) => {
 			case 24:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-180, 180]),
 					unit: '°'
@@ -350,7 +347,7 @@ const convert = (key, buffer, options) => {
 			case 25:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [-900, 19000]),
 					unit: 'm'
@@ -361,7 +358,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-0.075, 0.075]),
 					unit: '°'
@@ -372,7 +369,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-0.075, 0.075]),
 					unit: '°'
@@ -383,7 +380,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-0.075, 0.075]),
 					unit: '°'
@@ -394,7 +391,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-0.075, 0.075]),
 					unit: '°'
@@ -405,7 +402,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-0.075, 0.075]),
 					unit: '°'
@@ -416,7 +413,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-0.075, 0.075]),
 					unit: '°'
@@ -427,7 +424,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-0.075, 0.075]),
 					unit: '°'
@@ -438,7 +435,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-0.075, 0.075]),
 					unit: '°'
@@ -446,7 +443,7 @@ const convert = (key, buffer, options) => {
 			case 34:
 				klv.checkRequiredSize(key, buffer, 1)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.readUInt8(0),
 					//unit: 'code'
@@ -454,7 +451,7 @@ const convert = (key, buffer, options) => {
 			case 35:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [0, 360]),
 					unit: '°'
@@ -462,7 +459,7 @@ const convert = (key, buffer, options) => {
 			case 36:
 				klv.checkRequiredSize(key, buffer, 1)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt8(0), [0, 255], [0, 100]),
 					unit: 'm/s'
@@ -470,7 +467,7 @@ const convert = (key, buffer, options) => {
 			case 37:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [0, 5000]),
 					unit: 'mbar'
@@ -478,7 +475,7 @@ const convert = (key, buffer, options) => {
 			case 38:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [-900, 19000]),
 					unit: 'm'
@@ -486,7 +483,7 @@ const convert = (key, buffer, options) => {
 			case 39:
 				klv.checkRequiredSize(key, buffer, 1)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.readInt8(0),
 					unit: '°C'
@@ -494,7 +491,7 @@ const convert = (key, buffer, options) => {
 			case 40:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-90, 90]),
 					unit: '°'
@@ -502,7 +499,7 @@ const convert = (key, buffer, options) => {
 			case 41:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-180, 180]),
 					unit: '°'
@@ -510,55 +507,55 @@ const convert = (key, buffer, options) => {
 			case 42:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [-900, 19000]),
 					unit: 'm'
 				}
 			case 43:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: 2 * buffer.readUInt8(0),
 					unit: 'pixels'
 				}
 			case 44:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: 2 * buffer.readUInt8(0),
 					unit: 'pixels'
 				}
 			case 45:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [0, 2 ** 16 - 1], [0, 4095]),
 					unit: 'm'
 				}
 			case 46:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [0, 2 ** 16 - 1], [0, 4095]),
 					unit: 'm'
 				}
 			case 47:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.readUInt8(0),
 				}
 			case 48:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: st0102.parse(buffer, options)
 				}
 			case 50:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-20, 20]),
 					unit: '°'
@@ -566,7 +563,7 @@ const convert = (key, buffer, options) => {
 			case 51:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-180, 180]),
 					unit: 'm/s'
@@ -574,7 +571,7 @@ const convert = (key, buffer, options) => {
 			case 52:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-20, 20]),
 					unit: '°'
@@ -582,7 +579,7 @@ const convert = (key, buffer, options) => {
 			case 55:
 				klv.checkRequiredSize(key, buffer, 1)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt8(0), [0, 255], [0, 100]),
 					unit: '%'
@@ -590,7 +587,7 @@ const convert = (key, buffer, options) => {
 			case 56:
 				klv.checkRequiredSize(key, buffer, 1)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.readUInt8(0),
 					unit: 'm/s'
@@ -598,7 +595,7 @@ const convert = (key, buffer, options) => {
 			case 57:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt32BE(0), [0, 2 ** 32 - 1], [0, 5000000]),
 					unit: 'm'
@@ -606,35 +603,35 @@ const convert = (key, buffer, options) => {
 			case 58:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [0, 2 ** 16 - 1], [0, 10000]),
 					unit: 'kg'
 				}
 			case 59:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.toString()
 				}
 			case 62:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.readUInt16BE(0)
 				}
 			case 63:
 				klv.checkRequiredSize(key, buffer, 1)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.readUInt8(0),
 				}
 			case 64:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [0, 360]),
 					unit: '°'
@@ -642,20 +639,20 @@ const convert = (key, buffer, options) => {
 			case 65:
 				klv.checkRequiredSize(key, buffer, 1)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.readUInt8(0),
 				}
 			case 70:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.toString()
 				}
 			case 71:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [0, 360]),
 					unit: '°'
@@ -663,27 +660,27 @@ const convert = (key, buffer, options) => {
 			case 72:
 				klv.checkRequiredSize(key, buffer, 8)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: parseFloat(buffer.readBigUInt64BE(0)),
 					unit: 'µs'
 				}
 			case 73:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: st0806.parseLS(buffer, options)
 				}
 			case 74:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: st0903.parseLS(buffer, options)
 				}
 			case 75:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [-900, 19000]),
 					unit: 'm'
@@ -691,14 +688,14 @@ const convert = (key, buffer, options) => {
 			case 77:
 				klv.checkRequiredSize(key, buffer, 1)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.readUInt8(0),
 				}
 			case 78:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16 - 1], [-900, 19000]),
 					unit: 'm'
@@ -706,7 +703,7 @@ const convert = (key, buffer, options) => {
 			case 79:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-327, 327]),
 					unit: '°'
@@ -714,7 +711,7 @@ const convert = (key, buffer, options) => {
 			case 80:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 15 - 1), 2 ** 15 - 1], [-327, 327]),
 					unit: '°'
@@ -725,7 +722,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-90, 90]),
 					unit: '°'
@@ -736,7 +733,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-180, 180]),
 					unit: '°'
@@ -747,7 +744,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-90, 90]),
 					unit: '°'
@@ -758,7 +755,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-180, 180]),
 					unit: '°'
@@ -769,7 +766,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-90, 90]),
 					unit: '°'
@@ -780,7 +777,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-180, 180]),
 					unit: '°'
@@ -791,7 +788,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-90, 90]),
 					unit: '°'
@@ -802,7 +799,7 @@ const convert = (key, buffer, options) => {
 					return null
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt32BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-180, 180]),
 					unit: '°'
@@ -810,7 +807,7 @@ const convert = (key, buffer, options) => {
 			case 90:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-90, 90]),
 					unit: '°'
@@ -818,7 +815,7 @@ const convert = (key, buffer, options) => {
 			case 91:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-90, 90]),
 					unit: '°'
@@ -826,7 +823,7 @@ const convert = (key, buffer, options) => {
 			case 92:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-90, 90]),
 					unit: '°'
@@ -834,80 +831,80 @@ const convert = (key, buffer, options) => {
 			case 93:
 				klv.checkRequiredSize(key, buffer, 4)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(buffer.readInt16BE(0), [-1 * (2 ** 31 - 1), 2 ** 31 - 1], [-90, 90]),
 					unit: '°'
 				}
 			case 94:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: buffer.toString('hex') // todo verify this is supposed to have unicode in it
 				}
 			case 96:
 				klv.checkMaxSize(key, buffer, 8)
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: klv.scale(klv.readVariableUInt(buffer, buffer.length), [0, 2 ** (buffer.length * 8)], [0, 1500000]), //todo this is not correct
 					unit: 'm'
 				}
 			case 116:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: 'Not Implemented'
 				}
 			case 117:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: 'Not Implemented',
 					unit: 'dps'
 				}
 			case 118:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: 'Not Implemented',
 					unit: 'dps'
 				}
 			case 119:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: 'Not Implemented',
 					unit: 'dps'
 				}
 			case 120:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: 'Not Implemented',
 					unit: '%'
 				}
 			case 123:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: 'Not Implemented'
 				}
 			case 124:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: 'Not Implemented'
 				}
 			case 125:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: 'Not Implemented'
 				}
 			case 129:
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: 'Not Implemented'
 				}
@@ -916,7 +913,7 @@ const convert = (key, buffer, options) => {
 					throw Error(`Key ${key} not found`)
 				}
 				return {
-					...data,
+					key,
 					name: st0601data(key).name,
 					value: 'Not Implemented'
 				}

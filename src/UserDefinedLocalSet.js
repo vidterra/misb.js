@@ -49,21 +49,18 @@ module.exports.parse = function (buffer, options = {}) {
 }
 
 function convert(key, buffer, options) {
-	const data = {
-		key,
-	}
 	try {
 		switch (key) {
 			case 1:
 				id = buffer.readUInt8(0) & 0b00111111 // this must be set before key 2 is read
 				return {
-					...data,
+					key,
 					name: 'ID',
 					value: id
 				}
 			case 2:
 				return {
-					...data,
+					key,
 					name: LocalSet.getKeyName(id),
 					value: LocalSet.decodeValue(id, buffer)
 				}
@@ -72,7 +69,7 @@ function convert(key, buffer, options) {
 					//throw Error(`Key ${key} not found`)
 				}
 				return {
-					...data,
+					key,
 					name: 'Unknown',
 					value: buffer.toString()
 				}

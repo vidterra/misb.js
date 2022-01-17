@@ -43,22 +43,19 @@ module.exports.parse = function (buffer, options = {}) {
 }
 
 function convert(key, buffer) {
-	const data = {
-		key,
-	}
 	try {
 		switch (key) {
 			case 1:
 				klv.checkRequiredSize(key, buffer, 16)
 				return {
-					...data,
+					key,
 					name: 'Track ID',
 					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 3:
 				klv.checkRequiredSize(key, buffer, 8)
 				return {
-					...data,
+					key,
 					name: 'Start Time',
 					value: parseFloat(buffer.readBigUInt64BE(0)),
 					unit: 'µs'
@@ -66,20 +63,20 @@ function convert(key, buffer) {
 			case 4:
 				klv.checkRequiredSize(key, buffer, 8)
 				return {
-					...data,
+					key,
 					name: 'End Time',
 					value: parseFloat(buffer.readBigUInt64BE(0)),
 					unit: 'µs'
 				}
 			case 9:
 				return {
-					...data,
+					key,
 					name: 'TrackHistorySeries', // todo implement
 					value: buffer.toString()
 				}
 			case 10:
 				return {
-					...data,
+					key,
 					name: 'Velocity', // todo implement
 					value: buffer.toString()
 				}

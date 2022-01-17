@@ -62,34 +62,31 @@ module.exports.parse = function (buffer, options = {}) {
 }
 
 function convert(key, buffer, options) {
-	const data = {
-		key,
-	}
 	try {
 		switch (key) {
 			case 1:
 				klv.checkMaxSize(key, buffer, 3)
 				return {
-					...data,
+					key,
 					name: 'ID',
 					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 2:
 				klv.checkMaxSize(key, buffer, 3)
 				return {
-					...data,
+					key,
 					name: 'Parent ID',
 					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 3:
 				return {
-					...data,
+					key,
 					name: 'Ontology',
 					value: buffer.toString()
 				}
 			case 4:
 				return {
-					...data,
+					key,
 					name: 'Ontology Class',
 					value: buffer.toString()
 				}
@@ -98,7 +95,7 @@ function convert(key, buffer, options) {
 					//throw Error(`Key ${key} not found`)
 				}
 				return {
-					...data,
+					key,
 					name: 'Unknown',
 					value: buffer.toString()
 				}

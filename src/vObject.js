@@ -42,34 +42,31 @@ module.exports.parse = function (buffer, options = {}) {
 }
 
 function convert(key, buffer) {
-	const data = {
-		key,
-	}
 	try {
 		switch (key) {
 			case 1:
 				return {
-					...data,
+					key,
 					name: 'Ontology',
 					value: buffer.toString()
 				}
 			case 2:
 				return {
-					...data,
+					key,
 					name: 'Ontology Class',
 					value: buffer.toString()
 				}
 			case 3:
 				klv.checkMaxSize(key, buffer, 3)
 				return {
-					...data,
+					key,
 					name: 'Ontology ID',
 					value: klv.readVariableUInt(buffer, buffer.length)
 				}
 			case 4: // todo this is not correct
 				klv.checkMaxSize(key, buffer, 6)
 				return {
-					...data,
+					key,
 					name: 'Confidence',
 					value: klv.readVariableUInt(buffer, buffer.length)
 				}

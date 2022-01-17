@@ -97,22 +97,19 @@ module.exports.parseLS = function (buffer, options = {}) {
 }
 
 function convert(key, buffer, options) {
-	const data = {
-		key,
-	}
 	try {
 		switch (key) {
 			case 1:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: 'Checksum',
 					value: buffer.readUInt16BE(0)
 				}
 			case 2:
 				klv.checkRequiredSize(key, buffer, 8)
 				return {
-					...data,
+					key,
 					name: 'Precision Time Stamp',
 					value: parseFloat(klv.readVariableUInt(buffer, buffer.length)),
 					//value: parseFloat(buffer.readBigUInt64BE(0)),
@@ -121,7 +118,7 @@ function convert(key, buffer, options) {
 			case 3:
 				klv.checkMaxSize(key, buffer, 128)
 				return {
-					...data,
+					key,
 					name: 'VMTI System Name',
 					value: buffer.toString()
 				}
@@ -129,55 +126,55 @@ function convert(key, buffer, options) {
 				klv.checkMaxSize(key, buffer, 2)
 				data.value = klv.readVariableUInt(buffer, buffer.length)
 				return {
-					...data,
+					key,
 					name: 'VMTI Version Number',
 				}
 			case 5:
 				klv.checkMaxSize(key, buffer, 3)
 				data.value = klv.readVariableUInt(buffer, buffer.length)
 				return {
-					...data,
+					key,
 					name: 'Total Number Targets Reported',
 				}
 			case 6:
 				klv.checkMaxSize(key, buffer, 3)
 				data.value = klv.readVariableUInt(buffer, buffer.length)
 				return {
-					...data,
+					key,
 					name: 'Number Targets Reported',
 				}
 			case 7:
 				klv.checkMaxSize(key, buffer, 3)
 				data.value = klv.readVariableUInt(buffer, buffer.length)
 				return {
-					...data,
+					key,
 					name: 'Motion Imagery Frame Num',
 				}
 			case 8:
 				klv.checkMaxSize(key, buffer, 3)
 				data.value = klv.readVariableUInt(buffer, buffer.length)
 				return {
-					...data,
+					key,
 					name: 'Frame Width',
 				}
 			case 9:
 				klv.checkMaxSize(key, buffer, 3)
 				data.value = klv.readVariableUInt(buffer, buffer.length)
 				return {
-					...data,
+					key,
 					name: 'Frame Height',
 				}
 			case 10:
 				klv.checkMaxSize(key, buffer, 128)
 				return {
-					...data,
+					key,
 					name: 'VMTI Source Sensor',
 					value: buffer.toString()
 				}
 			case 11:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: 'VMTI Horizontal FoV',
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16], [0, 180]),
 					unit: '°'
@@ -185,26 +182,26 @@ function convert(key, buffer, options) {
 			case 12:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
-					...data,
+					key,
 					name: 'VMTI Vertical FoV',
 					value: klv.scale(buffer.readUInt16BE(0), [0, 2 ** 16], [0, 180]),
 					unit: '°'
 				}
 			case 101:
 				return {
-					...data,
+					key,
 					name: 'VTarget Series',
 					value: vTargetSeries.parse(buffer, options)
 				}
 			case 102:
 				return {
-					...data,
+					key,
 					name: 'Algorithm Series',
 					value: AlgorithmSeries.parse(buffer, options)
 				}
 			case 103:
 				return {
-					...data,
+					key,
 					name: 'Ontology Series',
 					value: Ontology.parse(buffer, options)
 				}

@@ -97,22 +97,18 @@ module.exports.parseLS = function (buffer, options = {}) {
 }
 
 function convert(key, buffer, options) {
-	const data = {
-		key
-	}
-
 	switch (key) {
 		case 1:
 			klv.checkRequiredSize(key, buffer, 4)
 			return {
-				...data,
+				key,
 				name: st0806data(key).name,
 				value: buffer.readUInt16BE(0)
 			}
 		case 2:
 			klv.checkRequiredSize(key, buffer, 8)
 			return {
-				...data,
+				key,
 				name: st0806data(key).name,
 				value: parseFloat(buffer.readBigUInt64BE(0)),
 				unit: 'µs'
@@ -120,27 +116,27 @@ function convert(key, buffer, options) {
 		case 7:
 			klv.checkRequiredSize(key, buffer, 4)
 			return {
-				...data,
+				key,
 				name: st0806data(key).name,
 				value: buffer.readUInt32BE(0),
 			}
 		case 8:
 			klv.checkRequiredSize(key, buffer, 1)
 			return {
-				...data,
+				key,
 				name: st0806data(key).name,
 				value: buffer.readUInt8(0),
 			}
 		case 9:
 			klv.checkRequiredSize(key, buffer, 4)
 			return {
-				...data,
+				key,
 				name: st0806data(key).name,
 				value: buffer.readUInt32BE(0),
 			}
 		case 10:
 			return {
-				...data,
+				key,
 				name: st0806data(key).name,
 				value: buffer.toString(),
 			}
@@ -148,13 +144,13 @@ function convert(key, buffer, options) {
 			const localSet = UserDefinedLocalSet.parse(buffer, options)
 			if(localSet['1'] && localSet['2']) {
 				return {
-					...data,
+					key,
 					name: `${localSet['2'].name} (${localSet['1'].value})`,
 					value: localSet['2'].value
 				}
 			} else {
 				return {
-					...data,
+					key,
 					name: `Error Bad Metadata`,
 					value: JSON.stringify(localSet)
 				}
@@ -162,28 +158,28 @@ function convert(key, buffer, options) {
 		case 12:
 			const poiSet = PoiLocalSet.parse(buffer, options)
 			return {
-				...data,
+				key,
 				name: st0806data(key).name,
 				value: poiSet,
 			}
 		case 18:
 			klv.checkRequiredSize(key, buffer, 1)
 			return {
-				...data,
+				key,
 				name: st0806data(key).name,
 				value: buffer.readUInt8(0),
 			}
 		case 19:
 			klv.checkRequiredSize(key, buffer, 3)
 			return {
-				...data,
+				key,
 				name: st0806data(key).name,
 				value: buffer.toString()
 			}
 		case 20:
 			klv.checkRequiredSize(key, buffer, 3)
 			return {
-				...data,
+				key,
 				name: st0806data(key).name,
 				value: buffer.readUIntBE(0, 3),
 				unit: 'm'
@@ -191,7 +187,7 @@ function convert(key, buffer, options) {
 		case 21:
 			klv.checkRequiredSize(key, buffer, 3)
 			return {
-				...data,
+				key,
 				name: st0806data(key).name,
 				value: buffer.readUIntBE(0, 3),
 				unit: 'm'

@@ -76,207 +76,203 @@ module.exports.parse = function (buffer, options = {}) {
 }
 
 function convert(key, buffer, options) {
-	const data = {
-		key,
-	}
-
 	try {
 		switch (key) {
 			case '060e2b34010101030702010101050000':
 				return {
-					...data,
+					key,
 					name: 'User Defined Time Stamp',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010702010201010000':
 				return {
-					...data,
+					key,
 					name: 'Start Date Time - UTC',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010702010207010000':
 				return {
-					...data,
+					key,
 					name: 'Event Start Date Time - UTC',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010420010201010000':
 				return {
-					...data,
+					key,
 					name: 'Image Source Device',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010701020103020000':
 				return {
-					...data,
+					key,
 					name: 'Frame Center Latitude',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010701020103040000':
 				return {
-					...data,
+					key,
 					name: 'Frame Center Longitude',
 					value: buffer.toString('hex')
 				}
 			case '060e2b340101010a0701020103160000':
 				return {
-					...data,
+					key,
 					name: '???',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010701090201000000':
 				return {
-					...data,
+					key,
 					name: 'Target Width',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010701020102020000':
 				return {
-					...data,
+					key,
 					name: 'Device Altitude',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101030701020102060200':
 				return {
-					...data,
+					key,
 					name: 'Device Longitude',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101030701020102040200':
 				return {
-					...data,
+					key,
 					name: 'Device Latitude',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010701080101000000':
 				return {
-					...data,
+					key,
 					name: 'Slant Range',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010701100102000000':
 				return {
-					...data,
+					key,
 					name: 'Angle to North',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010701100101000000':
 				return {
-					...data,
+					key,
 					name: 'Sensor Roll Angle',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101020420020101080000':
 				return {
-					...data,
+					key,
 					name: 'Field of View (Horizontal)',
 					value: buffer.toString('hex')
 				}
 			case '060e2b340101010704200201010a0100':
 				return {
-					...data,
+					key,
 					name: 'Field of View (Vertical)',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010701100103000000':
 				return {
-					...data,
+					key,
 					name: 'Obliquity Angle',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101070701100106000000':
 				return {
-					...data,
+					key,
 					name: 'Platform Heading Angle',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101070701100104000000':
 				return {
-					...data,
+					key,
 					name: 'Platform Roll Angle',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101070701100105000000':
 				return {
-					...data,
+					key,
 					name: 'Platform Pitch Angle',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101030701020103070100':
 				return {
-					...data,
+					key,
 					name: 'Corner Latitude Point 1',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101030701020103080100':
 				return {
-					...data,
+					key,
 					name: 'Corner Latitude Point 2',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101030701020103090100':
 				return {
-					...data,
+					key,
 					name: 'Corner Latitude Point 3',
 					value: buffer.toString('hex')
 				}
 			case '060e2b340101010307010201030a0100':
 				return {
-					...data,
+					key,
 					name: 'Corner Latitude Point 4',
 					value: buffer.toString('hex')
 				}
 			case '060e2b340101010307010201030b0100':
 				return {
-					...data,
+					key,
 					name: 'Corner Longitude Point 1',
 					value: buffer.toString('hex')
 				}
 			case '060e2b340101010307010201030c0100':
 				return {
-					...data,
+					key,
 					name: 'Corner Longitude Point 2',
 					value: buffer.toString('hex')
 				}
 			case '060e2b340101010307010201030d0100':
 				return {
-					...data,
+					key,
 					name: 'Corner Longitude Point 3',
 					value: buffer.toString('hex')
 				}
 			case '060e2b340101010307010201030e0100':
 				return {
-					...data,
+					key,
 					name: 'Corner Longitude Point 4',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010701010100000000':
 				return {
-					...data,
+					key,
 					name: 'Image Coordinate System',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010101200100000000':
 				return {
-					...data,
+					key,
 					name: 'Device Designation',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010701030101010000':
 				return {
-					...data,
+					key,
 					name: '???',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010701010200000000':
 				return {
-					...data,
+					key,
 					name: '???',
 					value: buffer.toString('hex')
 				}
 			case '060e2b34010101010105050000000000':
 				return {
-					...data,
+					key,
 					name: 'Episode Number',
 					value: buffer.toString('hex')
 				}
