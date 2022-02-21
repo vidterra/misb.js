@@ -3,12 +3,13 @@ const vTargetPack = require('./vTargetPack')
 
 module.exports.parse = function (buffer, options = {}) {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
-	const values = []
 
 	options.debug === true && console.debug('-------Start Parse vTarget Series-------')
 	options.debug === true && process.stdout.write(`Buffer ${buffer.toString('hex')} ${buffer.length}\n`)
-	let i = 0
 
+	const values = []
+
+	let i = 0
 	while (i < packet.length) {
 		let {berHeader, berLength, contentLength} = klv.getBer(packet[i])
 		if (contentLength === null) {

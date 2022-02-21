@@ -23,10 +23,23 @@ module.exports.checkMaxSize = (key, buffer, max) => {
 	return true
 }
 
-module.exports.readVariableUInt = (buffer, length) => {
+module.exports.readVariableUInt = (buffer) => {
 	let data = 0
-	for (let i = 0; i < length; i++) {
+	for (let i = 0; i < buffer.length; i++) {
 		data += buffer[i] * 256 ** (buffer.length - i - 1)
+	}
+	return data
+}
+
+module.exports.readVariableInt = (buffer) => {
+	let data = 0
+	for (let i = 0; i < buffer.length; i++) {
+		if (i === buffer.length - 1) {
+			data += buffer[i] & 0b01111111 * 256 ** (buffer.length - i - 1)
+			if(buffer[i] & 0b10000000 === 128) data *= -1
+		} else {
+			data += buffer[i] * 256 ** (buffer.length - i - 1)
+		}
 	}
 	return data
 }
@@ -43,7 +56,7 @@ module.exports.calculateChecksum = (packet) => {
 
 module.exports.isChecksumValid = (packet, checksum) => {
 	const toCheck = module.exports.calculateChecksum(packet)
-	if(toCheck !== checksum) console.debug(`Invalid checksum ${toCheck} !== ${checksum}`)
+	if (toCheck !== checksum) console.debug(`Invalid checksum ${toCheck} !== ${checksum}`)
 	return toCheck === checksum
 }
 
@@ -94,10 +107,7 @@ var crcTable = [0x00000000, 0x04c11db7, 0x09823b6e, 0x0d4326d9, 0x130476dc,
 //https://github.com/cablelabs/mpegtssections-js/blob/master/lib/mpegtssections.js
 //https://gwg.nga.mil/misb/docs/standards/ST0806.4.pdf
 module.exports.is0806ChecksumValid = (buf, checksum) => {
-	//console.log('22222222222222', typeof buf)
-	//console.log(buf)
 	const data = new Uint8Array(buf)
-	//console.log(data)
 	let crc = 0xffffffff
 	for (let i = 0; i < data.length; ++i) {
 		const tableIndex = ((crc >>> 24) ^ data[i]) & 0xff

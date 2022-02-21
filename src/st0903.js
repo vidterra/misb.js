@@ -36,7 +36,8 @@ module.exports.parse = function (buffer, options = {}) {
 
 	const values = module.exports.parseLS(buffer.slice(i, i + parsedLength), {...options, header: false})
 
-	if (!klv.isChecksumValid(packet.subarray(0, parsedLength), values[1].value || values[1])) {
+	const checksum = values.find(klv => klv.key === 1)
+	if (!klv.isChecksumValid(packet.subarray(0, parsedLength), checksum.value)) {
 		throw new Error('Invalid checksum')
 	}
 
@@ -45,10 +46,11 @@ module.exports.parse = function (buffer, options = {}) {
 
 module.exports.parseLS = function (buffer, options = {}) {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
-	const values = {}
 
 	options.debug === true && options.header !== false && console.debug('-------Start Parse 0903 LS-------')
 	options.debug === true && options.header !== false && process.stdout.write(`Packet ${packet.toString('hex')} ${packet.length}\n`)
+
+	const values = []
 
 	let i = 0
 	while (i < packet.length) {
@@ -74,21 +76,15 @@ module.exports.parseLS = function (buffer, options = {}) {
 		}
 
 		if (parsed) {
-
-			if (typeof parsed.value === 'string') {
-				parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
-			}
+			if (typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
 
 			if (options.debug === true) {
-				console.debug(key, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
+				if (key === 2) console.debug(key, contentLength, parsed.name, `${new Date(parsed.value / 1000)}${parsed.unit || ''}`, valueBuffer)
+				else console.debug(key, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 				parsed.packet = valueBuffer
 			}
 
-			if (options.verbose) {
-				values[key] = parsed
-			} else {
-				values[key] = parsed.value
-			}
+			values.push(parsed)
 		}
 		i += keyLength + berHeader + berLength + contentLength // advance past key, length and value bytes
 	}
@@ -111,7 +107,7 @@ function convert(key, buffer, options) {
 				return {
 					key,
 					name: 'Precision Time Stamp',
-					value: parseFloat(klv.readVariableUInt(buffer, buffer.length)),
+					value: parseFloat(klv.readVariableUInt(buffer)),
 					//value: parseFloat(buffer.readBigUInt64BE(0)),
 					unit: 'µs'
 				}
@@ -127,42 +123,42 @@ function convert(key, buffer, options) {
 				return {
 					key,
 					name: 'VMTI Version Number',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 5:
 				klv.checkMaxSize(key, buffer, 3)
 				return {
 					key,
 					name: 'Total Number Targets Reported',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 6:
 				klv.checkMaxSize(key, buffer, 3)
 				return {
 					key,
 					name: 'Number Targets Reported',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 7:
 				klv.checkMaxSize(key, buffer, 3)
 				return {
 					key,
 					name: 'Motion Imagery Frame Num',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 8:
 				klv.checkMaxSize(key, buffer, 3)
 				return {
 					key,
 					name: 'Frame Width',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 9:
 				klv.checkMaxSize(key, buffer, 3)
 				return {
 					key,
 					name: 'Frame Height',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 10:
 				klv.checkMaxSize(key, buffer, 128)
@@ -206,10 +202,14 @@ function convert(key, buffer, options) {
 					value: Ontology.parse(buffer, options)
 				}
 			default:
-				if (options.debug === true) {
-					throw Error(`Key ${key} not found`)
+				if (options.strict === true) {
+					throw Error(`st0903 key ${key} not found`)
 				}
-				return null
+				return {
+					key,
+					name: 'Unknown',
+					value: buffer.toString()
+				}
 		}
 	} catch (e) {
 		throw e

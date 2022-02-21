@@ -1,10 +1,11 @@
 const klv = require("./klv");
 module.exports.parse = function (buffer, options = {}) {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
-	const values = {}
 
 	options.debug === true && console.debug('-------Start Parse Point Local Set-------')
 	options.debug === true && process.stdout.write(`Buffer ${buffer.toString('hex')} ${buffer.length}\n`)
+
+	const values = []
 
 	const keyPlusLength = 2
 	let i = 0
@@ -28,11 +29,7 @@ module.exports.parse = function (buffer, options = {}) {
 			parsed.packet = valueBuffer
 		}
 
-		if(options.verbose) {
-			values[key] = parsed
-		} else {
-			values[key] = parsed.value
-		}
+		values.push(parsed)
 
 		i += keyPlusLength + valueLength // advance past key, length and value bytes
 	}

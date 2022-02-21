@@ -47,13 +47,13 @@ module.exports.parse = function (buffer, options = {}) {
 
 module.exports.parseLS = function (buffer, options = {}) {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
-	const values = {}
 
 	options.debug === true && options.header !== false && console.debug('-------Start Parse 0806-------')
 	options.debug === true && options.header !== false && process.stdout.write(`Packet ${packet.toString('hex')} ${packet.length}\n`)
 
-	let i = 0
+	const values = []
 
+	let i = 0
 	while (i < packet.length) {
 		const key = packet[i]
 
@@ -74,16 +74,12 @@ module.exports.parseLS = function (buffer, options = {}) {
 		}
 
 		if (options.debug === true) {
-			console.debug(key, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
+			if (key === 2) console.debug(key, contentLength, parsed.name, `${new Date(parsed.value / 1000)}${parsed.unit || ''}`, valueBuffer)
+			else console.debug(key, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 			parsed.packet = valueBuffer
 		}
 
-		if (key === 11) { // handle User Defined LS Key 11 differently
-			if (values[key] === undefined) values[key] = []
-			values[key].push(options.verbose ? parsed : parsed.value)
-		} else {
-			values[key] = options.verbose ? parsed : parsed.value
-		}
+		values.push(parsed)
 
 		i += berHeader + berLength + contentLength + 1 // advance past key, length and value bytes
 	}
@@ -142,11 +138,13 @@ function convert(key, buffer, options) {
 			}
 		case 11:
 			const localSet = UserDefinedLocalSet.parse(buffer, options)
-			if(localSet['1'] && localSet['2']) {
+			const id = localSet.find(klv => klv.key === 1)
+			const data = localSet.find(klv => klv.key === 2)
+			if (id && data) {
 				return {
 					key,
-					name: `${localSet['2'].name} (${localSet['1'].value})`,
-					value: localSet['2'].value
+					name: `${data.name} (${id.value})`,
+					value: data.value
 				}
 			} else {
 				return {

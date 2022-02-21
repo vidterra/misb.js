@@ -1,10 +1,14 @@
 {
 	"name": "@vidterra/misb.js",
-	"version": "0.0.4",
+	"version": "0.1.0",
 	"description": "Lightweight JavaScript library for parsing and manipulating MISB KLV metadata",
 	"main": "index.js",
 	"scripts": {
-		"test": "jest"
+		"test": "jest",
+		"watch": "jest --watch"
+	},
+	"jest": {
+		"testPathIgnorePatterns": ["/videos/"]
 	},
 	"repository": {
 		"type": "git",

@@ -2,10 +2,11 @@ const klv = require('./klv')
 
 module.exports.parse = function (buffer, options = {}) {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
-	const values = {}
 
 	options.debug === true && console.debug('-------Start Parse vTracker-------')
 	options.debug === true && process.stdout.write(`Buffer ${buffer.toString('hex')} ${buffer.length}\n`)
+
+	const values = []
 
 	let i = 0
 	const berHeader = 1
@@ -21,20 +22,14 @@ module.exports.parse = function (buffer, options = {}) {
 		const valueBuffer = packet.subarray(i + berHeader + berLength, i + berHeader + berLength + contentLength)
 		const parsed = convert(key, valueBuffer)
 
-		if(typeof parsed.value === 'string') {
-			parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
-		}
+		if(typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
 
 		if (options.debug === true) {
 			console.debug(key, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 			parsed.packet = valueBuffer
 		}
 
-		if(options.verbose) {
-			values[key] = parsed
-		} else {
-			values[key] = parsed.value
-		}
+		values.push(parsed)
 
 		i += berHeader + berLength + contentLength // advance past key, length and value bytes
 	}
@@ -50,7 +45,7 @@ function convert(key, buffer) {
 				return {
 					key,
 					name: 'Track ID',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 3:
 				klv.checkRequiredSize(key, buffer, 8)

@@ -27,7 +27,7 @@ module.exports.parse = function (buffer, options = {}) {
 		}
 
 		let j = i
-		let ontology = {}
+		let ontology = []
 		while (j < i + length) {
 			const key = packet[j]
 			const contentLength = packet[j + 1]
@@ -37,20 +37,14 @@ module.exports.parse = function (buffer, options = {}) {
 			const valueBuffer = packet.subarray(j + berHeader + berLength, j + berHeader + berLength + contentLength)
 			const parsed = convert(key, valueBuffer, options)
 
-			if (typeof parsed.value === 'string') {
-				parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
-			}
+			if (typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
 
 			if (options.debug === true) {
 				console.debug(key, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 				parsed.packet = valueBuffer
 			}
 
-			if (options.verbose) {
-				ontology[key] = parsed
-			} else {
-				ontology[key] = parsed.value
-			}
+			ontology.push(parsed)
 
 			j += berHeader + berLength + contentLength // advance past key, length and value bytes
 		}
@@ -69,14 +63,14 @@ function convert(key, buffer, options) {
 				return {
 					key,
 					name: 'ID',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 2:
 				klv.checkMaxSize(key, buffer, 3)
 				return {
 					key,
 					name: 'Parent ID',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 3:
 				return {
@@ -91,8 +85,8 @@ function convert(key, buffer, options) {
 					value: buffer.toString()
 				}
 			default:
-				if (options.debug === true) {
-					//throw Error(`Key ${key} not found`)
+				if (options.strict === true) {
+					throw Error(`Ontology key ${key} not found`)
 				}
 				return {
 					key,

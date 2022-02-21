@@ -6,12 +6,13 @@ const vTracker = require('./vTracker')
 
 module.exports.parse = function (buffer, options = {}) {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
-	const values = {}
 
 	options.debug === true && console.debug('-------Start Parse vTarget Pack-------')
 	options.debug === true && process.stdout.write(`Buffer ${buffer.toString('hex')} ${buffer.length}\n`)
-	let i = 0
 
+	const values = []
+
+	let i = 0
 	let targetId = 0
 	let read
 	do {
@@ -22,15 +23,12 @@ module.exports.parse = function (buffer, options = {}) {
 		i++
 	} while (read >>> 7 === 1)
 
-	if(options.verbose) {
-		values.targetId = {
-			key: 0,
-			name: 'Target ID',
-			value: targetId
-		}
-	} else {
-		values.targetId = targetId
-	}
+	values.push({
+		key: 0,
+		name: 'Target ID',
+		value: targetId
+	})
+
 	options.debug === true && console.debug('Target', targetId)
 
 	while (i < packet.length) {
@@ -44,20 +42,14 @@ module.exports.parse = function (buffer, options = {}) {
 		const valueBuffer = packet.subarray(i + 2, i + 2 + length)
 		const parsed = convert(key, valueBuffer, options)
 
-		if(typeof parsed.value === 'string') {
-			parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
-		}
+		if(typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
 
 		if (options.debug === true) {
 			console.debug(key, length, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 			parsed.packet = valueBuffer
 		}
 
-		if(options.verbose) {
-			values[key] = parsed
-		} else {
-			values[key] = parsed.value
-		}
+		values.push(parsed)
 
 		i += 1 + 1 + length // advance past key, length and value bytes
 	}
@@ -73,21 +65,21 @@ function convert(key, buffer, options) {
 				return {
 					key,
 					name: 'Target Centroid',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 2:
 				klv.checkMaxSize(key, buffer, 6)
 				return {
 					key,
 					name: 'Boundary Top Left',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 3:
 				klv.checkMaxSize(key, buffer, 6)
 				return {
 					key,
 					name: 'Boundary Bottom Right',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 5:
 				klv.checkMaxSize(key, buffer, 6)
@@ -108,21 +100,21 @@ function convert(key, buffer, options) {
 				return {
 					key,
 					name: 'Centroid Pix Row',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 20:
 				klv.checkMaxSize(key, buffer, 4)
 				return {
 					key,
 					name: 'Centroid Pix Col',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 22:
 				klv.checkMaxSize(key, buffer, 4)
 				return {
 					key,
 					name: 'Algorithm ID',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 102:
 				return {

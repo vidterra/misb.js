@@ -14,17 +14,16 @@ if (process.argv.length < 3) {
 
 fs.readFile(process.argv[2], (err, file) => {
 	const start = new Date().getTime() / 1000
-	const result = klv.decode(file, standards, null, { debug: process.argv[3] === 'debug', verbose: true })
+	const result = klv.decode(file, standards, null, { debug: process.argv[3] === 'debug'})
 	for (const standard of standards) {
 		for(const packet of result[standard.name]) {
 			packets[standard.name].push(packet)
 		}
 	}
 
-	console.log(packets['st0601'][0])
 	for (const standard of standards) {
 		const name = standard.name
-		console.log(`${name}: ${packets[name]?.length ?? 0}`)
+		console.info(`${name}: ${packets[name]?.length ?? 0}`)
 	}
-	console.log(`Processing time ${(new Date().getTime() / 1000 - start).toFixed(2)}s`)
+	console.info(`Processing time ${(new Date().getTime() / 1000 - start).toFixed(2)}s`)
 })

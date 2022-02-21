@@ -9,7 +9,6 @@ module.exports.minSize = 31
 
 module.exports.parse = (buffer, options = {}) => {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
-	const values = {}
 
 	options.debug === true && console.debug('-------Start Parse 0601-------')
 	options.debug === true && process.stdout.write(`Packet ${packet.toString('hex')} ${packet.length}\n`)
@@ -33,6 +32,8 @@ module.exports.parse = (buffer, options = {}) => {
 		throw new Error('Buffer includes ST0601 key and BER but not content')
 	}
 
+	const values = []
+
 	let i = module.exports.key.length + berHeader + berLength //index of first content key
 	while (i < parsedLength) {
 		const {key, keyLength} = klv.getKey(packet.subarray(i, packet.length))
@@ -51,9 +52,8 @@ module.exports.parse = (buffer, options = {}) => {
 		const parsed = convert(key, valueBuffer, options)
 
 		if (parsed !== null) {
-			if (typeof parsed.value === 'string') {
-				parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
-			}
+			if (typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
+
 			if (options.debug === true) {
 				if (key === 2) {
 					console.debug(key, contentLength, parsed.name, `${new Date(parsed.value / 1000)}${parsed.unit || ''}`, valueBuffer)
@@ -64,11 +64,8 @@ module.exports.parse = (buffer, options = {}) => {
 			if (options.debug || options.payload) {
 				parsed.packet = valueBuffer
 			}
-			if (options.verbose) {
-				values[key] = parsed
-			} else {
-				values[key] = parsed.value
-			}
+
+			values.push(parsed)
 		} else {
 			options.debug === true && console.debug(key, contentLength, 'NULL')
 		}
@@ -76,7 +73,8 @@ module.exports.parse = (buffer, options = {}) => {
 		i += keyLength + berHeader + berLength + contentLength // advance past key, length and value bytes
 	}
 
-	if (!klv.isChecksumValid(packet.subarray(0, parsedLength), values[1].value || values[1])) {
+	const checksum = values.find(klv => klv.key === 1)
+	if (!klv.isChecksumValid(packet.subarray(0, parsedLength), checksum.value)) {
 		console.debug('Invalid checksum')
 		//throw new Error(`Invalid checksum`)
 	}
@@ -84,23 +82,17 @@ module.exports.parse = (buffer, options = {}) => {
 	return values
 }
 
-module.exports.encode = (data) => {
-	const chunks = []
-
-	const keys = Object.keys(data)
-	for (const key of keys) {
-		const packet = data[key]
-		const value = packet.value || packet // support verbose true or false
-		if (key == 2) {
-			const test = BigInt(value)
-			const uint = bnToBuf(test, st0601data(key).length)
-			//const value = Buffer.from(uint).toString('hex')
-			chunks.push({
-				key,
-				packet: uint
-			})
+module.exports.encode = (items) => {
+	const chunks = items.map(klv => {
+		if (klv.key == 2) {
+			const uint = bnToBuf(klv.value, st0601data(klv.key).length)
+			return {
+				key: klv.key,
+				value: uint
+			}
 		}
-	}
+		return klv
+	})
 
 	return module.exports.assemble(chunks)
 }
@@ -109,11 +101,11 @@ module.exports.assemble = (chunks) => {
 	const header = module.exports.key.toString('hex')
 	let payload = ''
 	for (const chunk of chunks) {
-		if(chunk.key === 1) {
+		if (chunk.key === 1) {
 			continue
 		}
-		const packet = typeof chunk.packet === 'string' ? chunk.packet : chunk.packet.toString('hex')
-		payload += chunk.key.toString(16).padStart(2, '0') + (packet.length/2).toString(16).padStart(2, '0') + packet
+		const packet = typeof chunk.value === 'string' ? chunk.value : chunk.value.toString(16)
+		payload += chunk.key.toString(16).padStart(2, '0') + (packet.length / 2).toString(16).padStart(2, '0') + packet
 	}
 	const payloadWithCheckSum = payload + `01020000`
 	const completePacketForChecksum = header + getPayloadLengthBer(payloadWithCheckSum) + payloadWithCheckSum
@@ -121,7 +113,7 @@ module.exports.assemble = (chunks) => {
 	return completePacketForChecksum.slice(0, -4) + checksum.toString(16) // remove 4 blank characters, 2 bytes
 }
 
-const getPayloadLengthBer= (payload) => {
+const getPayloadLengthBer = (payload) => {
 	const byteLength = payload.length / 2
 	if (byteLength > 128) { // BER long form
 		const berLength = Math.ceil(byteLength / 256)
@@ -133,31 +125,8 @@ const getPayloadLengthBer= (payload) => {
 
 const bnToBuf = (bn, size) => {
 	let hex = BigInt(bn).toString(16)
-
 	hex = hex.padStart(size * 2, '0')
 	return hex
-	// todo can it be odd? if so add code back
-	/*	if (hex.length % 2) {
-		hex = '0' + hex
-	}
-	 */
-	/*
-		// The byteLength will be half of the hex string length
-		var len = hex.length / 2
-		var u8 = new Uint8Array(len)
-
-		// And then we can iterate each element by one
-		// and each hex segment by two
-		var i = 0
-		var j = 0
-		while (i < len) {
-			u8[i] = parseInt(hex.slice(j, j + 2), 16)
-			i += 1
-			j += 2
-		}
-
-		// Tada!!
-		return u8*/
 }
 
 const convert = (key, buffer, options) => {
@@ -847,7 +816,7 @@ const convert = (key, buffer, options) => {
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(klv.readVariableUInt(buffer, buffer.length), [0, 2 ** (buffer.length * 8)], [0, 1500000]), //todo this is not correct
+					value: klv.scale(klv.readVariableUInt(buffer), [0, 2 ** (buffer.length * 8)], [0, 1500000]), //todo this is not correct
 					unit: 'm'
 				}
 			case 116:
@@ -910,7 +879,7 @@ const convert = (key, buffer, options) => {
 				}
 			default:
 				if (options.strict === true) {
-					throw Error(`Key ${key} not found`)
+					throw Error(`st0601 key ${key} not found`)
 				}
 				return {
 					key,

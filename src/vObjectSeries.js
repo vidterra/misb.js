@@ -16,11 +16,11 @@ module.exports.parse = function (buffer, options = {}) {
 			throw new Error('Invalid vObjectSeries buffer, not enough content')
 		}
 
-		const vObj = vObject.parse(packet.subarray(i+berLength, i + berLength + contentLength))
+		const vObj = vObject.parse(packet.subarray(i + berLength, i + berLength + contentLength))
 		values.push(vObj)
 		options.debug === true && console.debug('vObject', contentLength, vObj)
 
-		i+= berLength + contentLength
+		i += berLength + contentLength
 	}
 	options.debug === true && console.debug('-------End Parse vObjectSeries---------')
 	return values

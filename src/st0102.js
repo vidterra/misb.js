@@ -4,10 +4,11 @@ module.exports.name = 'st0102'
 
 module.exports.parse = function (buffer, options = {}) {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
-	const values = {}
 
 	options.debug === true && console.debug('-------Start Parse 0102-------')
 	options.debug === true && process.stdout.write(`Packet ${packet.toString('hex')} ${packet.length}\n`)
+
+	const values = []
 
 	let i = 0
 	while (i < packet.length) {
@@ -25,11 +26,7 @@ module.exports.parse = function (buffer, options = {}) {
 				parsed.packet = valueBuffer
 			}
 
-			if(options.verbose) {
-				values[key] = parsed
-			} else {
-				values[key] = parsed.value
-			}
+			values.push(parsed)
 		} else {
 			options.debug === true && console.debug(key, length, 'NULL')
 		}
@@ -276,9 +273,13 @@ function convert(key, buffer, options) {
 				value: buffer.readUInt16BE(0)
 			}
 		default:
-			if(options.debug === true) {
-				throw Error(`Key ${key} not found`)
+			if (options.strict === true) {
+				throw Error(`st0102 key ${key} not found`)
 			}
-			return null
+			return {
+				key,
+				name: 'Unknown',
+				value: 'Not Implemented'
+			}
 	}
 }

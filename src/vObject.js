@@ -2,10 +2,11 @@ const klv = require('./klv')
 
 module.exports.parse = function (buffer, options = {}) {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
-	const values = {}
 
 	options.debug === true && console.debug('-------Start Parse vObject-------')
 	options.debug === true && process.stdout.write(`Buffer ${buffer.toString('hex')} ${buffer.length}\n`)
+
+	const values = []
 
 	const keyPlusLength = 2
 	let i = 0
@@ -20,20 +21,14 @@ module.exports.parse = function (buffer, options = {}) {
 		const valueBuffer = packet.subarray(i + keyPlusLength, i + keyPlusLength + valueLength)
 		const parsed = convert(key, valueBuffer)
 
-		if(typeof parsed.value === 'string') {
-			parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
-		}
+		if(typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
 
 		if (options.debug === true) {
 			console.debug(key, valueLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 			parsed.packet = valueBuffer
 		}
 
-		if(options.verbose) {
-			values[key] = parsed
-		} else {
-			values[key] = parsed.value
-		}
+		values.push(parsed)
 
 		i += keyPlusLength + valueLength // advance past key, length and value bytes
 	}
@@ -61,14 +56,14 @@ function convert(key, buffer) {
 				return {
 					key,
 					name: 'Ontology ID',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 4: // todo this is not correct
 				klv.checkMaxSize(key, buffer, 6)
 				return {
 					key,
 					name: 'Confidence',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			default:
 				throw Error(`Key ${key} not found`)

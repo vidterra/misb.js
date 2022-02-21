@@ -17,7 +17,7 @@ process.stdin.on('data', function (data) {
 }).on('end', function () {
 	for (const standard of standards) {
 		const name = standard.name
-		console.log(`${name}: ${packets[name]?.length ?? 0}`)
+		console.info(`${name}: ${packets[name]?.length ?? 0}`)
 	}
-	console.log(`Processing time ${(new Date().getTime() / 1000 - start).toFixed(2)}s`)
+	console.info(`Processing time ${(new Date().getTime() / 1000 - start).toFixed(2)}s`)
 })

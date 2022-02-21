@@ -6,7 +6,6 @@ module.exports.minSize = 31
 
 module.exports.parse = function (buffer, options = {}) {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
-	const values = {}
 
 	options.debug === true && console.debug('-------Start Parse 0104-------')
 	options.debug === true && process.stdout.write(`Packet ${packet.toString('hex')} ${packet.length}\n`)
@@ -30,6 +29,8 @@ module.exports.parse = function (buffer, options = {}) {
 		throw new Error('Buffer includes ST0104 key and BER but not content')
 	}
 
+	const values = []
+
 	let i = module.exports.key.length + berHeader + berLength //index of first content key
 	while (i < parsedLength) {
 		const key = packet.subarray(i, i + 16)
@@ -49,29 +50,24 @@ module.exports.parse = function (buffer, options = {}) {
 		const parsed = convert(keyString, valueBuffer, options)
 
 		if (parsed !== null) {
-			if (typeof parsed.value === 'string') {
-				parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
-			}
+			if (typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
+
 			if (options.debug === true) {
 				console.debug(keyString, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 				parsed.packet = valueBuffer
 			}
-			if (options.verbose) {
-				values[keyString] = parsed
-			} else {
-				values[keyString] = parsed.value
-			}
+			values.push(parsed)
 		} else {
 			options.debug === true && console.debug(keyString, contentLength, 'NULL')
 		}
 
 		i += key.length + berHeader + berLength + contentLength // advance past key, length and value bytes
 	}
-/*
-	if (!klv.isChecksumValid(packet.subarray(0, parsedLength), values[1]?.value || values[1])) {
-		throw new Error('Invalid checksum')
-	}
-*/
+	/*
+		if (!klv.isChecksumValid(packet.subarray(0, parsedLength), values[1]?.value || values[1])) {
+			throw new Error('Invalid checksum')
+		}
+	*/
 	return values
 }
 

@@ -2,14 +2,11 @@ const klv = require('./klv')
 
 module.exports.parse = function (buffer, options = {}) {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
-	const values = {}
 
 	options.debug === true && console.debug('-------Start Parse Algorithm series-------')
 	options.debug === true && process.stdout.write(`Buffer ${buffer.toString('hex')} ${buffer.length}\n`)
 
-
-	let i=0
-
+	let i = 0
 	let length = 0
 	let read
 	do {
@@ -18,8 +15,7 @@ module.exports.parse = function (buffer, options = {}) {
 		i++
 	} while (read >>> 7 === 1)
 
-
-	if(packet.length -1 < length) {
+	if (packet.length - 1 < length) {
 		throw new Error('Invalid Algorithm Series buffer, not enough content')
 	}
 
@@ -33,30 +29,24 @@ module.exports.parse = function (buffer, options = {}) {
 			throw new Error('Invalid Algorithm Series buffer, not enough content')
 		}
 
-		if(key === 1) {
-			if(algorithm !== null) {
-				algorithms.push(algorithm)
+		if (key === 1) {
+			if (algorithm !== null) {
+				algorithms.push(algorithm) // push the completed algorithm
 			}
-			algorithm = {}
+			algorithm = [] // reset for a new algorithm
 		}
 
 		const valueBuffer = packet.subarray(i + 2, i + 2 + length)
-		const parsed = convert(key, valueBuffer)
+		const parsed = convert(key, valueBuffer, options)
 
-		if(typeof parsed.value === 'string') {
-			parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
-		}
+		if (typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
 
 		if (options.debug === true) {
 			console.debug(key, length, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 			parsed.packet = valueBuffer
 		}
 
-		if(options.verbose) {
-			algorithm[key] = parsed
-		} else {
-			algorithm[key] = parsed.value
-		}
+		algorithm.push(parsed)
 
 		i += 1 + 1 + length // advance past key, length and value bytes
 	}
@@ -65,7 +55,7 @@ module.exports.parse = function (buffer, options = {}) {
 	return algorithms
 }
 
-function convert(key, buffer) {
+function convert(key, buffer, options) {
 	try {
 		switch (key) {
 			case 1:
@@ -73,7 +63,7 @@ function convert(key, buffer) {
 				return {
 					key,
 					name: 'ID',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			case 2:
 				return {
@@ -97,10 +87,17 @@ function convert(key, buffer) {
 				return {
 					key,
 					name: 'nFrames',
-					value: klv.readVariableUInt(buffer, buffer.length)
+					value: klv.readVariableUInt(buffer)
 				}
 			default:
-				throw Error(`Key ${key} not found`)
+				if (options.strict === true) {
+					throw Error(`Algorithm Series key ${key} not found`)
+				}
+				return {
+					key,
+					name: 'Unknown',
+					value: buffer.toString()
+				}
 		}
 	} catch (e) {
 		throw e
