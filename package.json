@@ -1,6 +1,6 @@
 {
 	"name": "@vidterra/misb.js",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "Lightweight JavaScript library for parsing and manipulating MISB KLV metadata",
 	"main": "index.js",
 	"scripts": {
@@ -19,6 +19,7 @@
 		"misb",
 		"0601",
 		"0903",
+		"0806",
 		"isr",
 		"video",
 		"4609"

@@ -1,15 +1,16 @@
 # misb.js
 
-Lightweight JavaScript library for parsing and manipulating [MISB](https://gwg.nga.mil/misb/st_pubs.html) KLV metadata
+Lightweight JavaScript library for parsing and manipulating [MISB](https://nsgreg.nga.mil/misb.jsp) KLV metadata
 
 ## About
 
 misb.js is a dependency free library to parse and create KLV metadata in JavaScript. It supports both front-end web browsers and back-end Node.js implementations. misb.js is not affiliated with or endorsed by the Motion Imagery Standards Board.    
 
 ### Supported standards
-- [ST 0601 UAS Datalink Local Set](https://gwg.nga.mil/misb/docs/standards/ST0601.17.pdf): Partial
-- [ST 0102 Security Metadata](https://gwg.nga.mil/misb/docs/standards/ST0102.12.pdf): Partial
-- [ST 0903 VMTI and Track Metadata](https://gwg.nga.mil/misb/docs/standards/ST0903.5.pdf): Partial
+- [ST 0601 UAS Datalink Local Set](https://nsgreg.nga.mil/doc/view?i=5093): Partial
+- [ST 0102 Security Metadata](https://nsgreg.nga.mil/doc/view?i=4422): Partial
+- [ST 0903 VMTI and Track Metadata](https://nsgreg.nga.mil/doc/view?i=5310): Partial
+- [ST 0806 Remote Video Terminal Metadata Set](https://nsgreg.nga.mil/doc/view?i=4162): Partial
 
 ## Installation
 ### NPM
@@ -17,7 +18,7 @@ misb.js is a dependency free library to parse and create KLV metadata in JavaScr
 To install `misb.js` with npm run
 
 ```bash
-npm install misb.js
+npm install @vidterra/misb.js
 ```
 
 `misb.js` currently requires the use of Node.js 14.x LTS and higher
@@ -33,7 +34,7 @@ Not started
 ### Basic Usage
 
 ```
-const { st0601 } = require('misb.js')
+const { st0601 } = require('@vidterra/misb.js')
 const klv =[ 
     '060E2B34020B01010E0103010100000081D2020800046050584E0180030A4D697373696F6E20',
     '3132050271C20602FD3D070208B80A085072656461746F720B07454F204E6F73650C0E47656F',
@@ -64,7 +65,7 @@ See `scripts/stdin.js` for an example of programmatically reading KLV from a ffm
 
 - [ ] Tests
 - [ ] Browser support
-- [ ] JSON to KLV conversion
+- [ ] JSON to KLV encoding
 
 ## Modules
 
@@ -78,6 +79,7 @@ const { st0601, st0102, st0903, klv } = require('misb.js') // export the modules
 - st0601: a module to parse ST 0601 data
 - st0102: a module to parse ST 0102 data
 - st0903: a module to parse ST 0903 data
+- st0806: a module to parse ST 0806 data
 - klv: a module for generic KLV helper functions
 
 ### ST 0601
