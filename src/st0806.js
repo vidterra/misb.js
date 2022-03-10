@@ -137,20 +137,28 @@ function convert(key, buffer, options) {
 				value: buffer.toString(),
 			}
 		case 11:
-			const localSet = UserDefinedLocalSet.parse(buffer, options)
-			const id = localSet.find(klv => klv.key === 1)
-			const data = localSet.find(klv => klv.key === 2)
-			if (id && data) {
-				return {
-					key,
-					name: `${data.name} (${id.value})`,
-					value: data.value
+			try {
+				const localSet = UserDefinedLocalSet.parse(buffer, options)
+				const id = localSet.find(klv => klv.key === 1)
+				const data = localSet.find(klv => klv.key === 2)
+				if (id && data) {
+					return {
+						key,
+						name: `${data.name} (${id.value})`,
+						value: data.value
+					}
+				} else {
+					return {
+						key,
+						name: `Error Bad Metadata`,
+						value: JSON.stringify(localSet)
+					}
 				}
-			} else {
+			} catch(e) {
 				return {
 					key,
 					name: `Error Bad Metadata`,
-					value: JSON.stringify(localSet)
+					value: buffer.toString()
 				}
 			}
 		case 12:
