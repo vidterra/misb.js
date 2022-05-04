@@ -42,6 +42,7 @@ module.exports.parse = function (buffer, options = {}) {
 		const valueBuffer = packet.subarray(i + 2, i + 2 + length)
 		const parsed = convert(key, valueBuffer, options)
 
+
 		if(typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
 
 		if (options.debug === true) {
@@ -136,9 +137,13 @@ function convert(key, buffer, options) {
 				}
 			default:
 				if (options.debug === true) {
-					throw Error(`Key ${key} not found`)
+					throw Error(`vTargetPack key ${key} not found`)
 				}
-				return null
+				return {
+					key,
+					name: 'Unknown',
+					value: buffer.toString()
+				}
 		}
 	} catch (e) {
 		throw e
