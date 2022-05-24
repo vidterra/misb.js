@@ -202,7 +202,11 @@ function convert(key, buffer, options) {
 			if (options.debug === true) {
 				throw Error(`Key ${key} not found`)
 			}
-			return null
+			return {
+				key,
+				name: 'Unknown',
+				value: buffer.toString()
+			}
 	}
 }
 
