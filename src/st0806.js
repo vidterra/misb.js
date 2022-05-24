@@ -199,12 +199,12 @@ function convert(key, buffer, options) {
 				unit: 'm'
 			}
 		default:
-			if (options.debug === true) {
+			if (options.strict === true) {
 				throw Error(`Key ${key} not found`)
 			}
 			return {
 				key,
-				name: 'Unknown',
+				name: st0806data(key).name,
 				value: buffer.toString()
 			}
 	}
@@ -239,6 +239,8 @@ const st0806data = (key) => {
 			return {name: 'User Defined LS'}
 		case 12:
 			return {name: 'Point of Interest LS'}
+		case 13:
+			return {name: 'Area of Interest LS'}
 		case 18:
 			return {name: 'MGRS Zone Second Value', length: 1}
 		case 19:

@@ -1,4 +1,4 @@
-const klv = require("./klv");
+const klv = require('./klv')
 module.exports.parse = function (buffer, options = {}) {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
 
@@ -115,8 +115,8 @@ function convert(key, buffer, options) {
 					value: buffer.toString()
 				}
 			default:
-				if (options.debug === true) {
-					//throw Error(`Key ${key} not found`)
+				if (options.strict === true) {
+					throw Error(`Key ${key} not found`)
 				}
 				return {
 					key,
