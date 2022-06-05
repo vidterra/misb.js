@@ -104,7 +104,7 @@ module.exports.assemble = (chunks) => {
 		if (chunk.key === 1) {
 			continue
 		}
-		const packet = typeof chunk.value === 'string' ? chunk.value : chunk.value.toString(16)
+		const packet = typeof chunk.packet === 'string' ? chunk.packet : chunk.packet.toString('hex')
 		payload += chunk.key.toString(16).padStart(2, '0') + (packet.length / 2).toString(16).padStart(2, '0') + packet
 	}
 	const payloadWithCheckSum = payload + `01020000`
