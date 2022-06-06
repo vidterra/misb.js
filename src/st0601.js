@@ -51,24 +51,20 @@ module.exports.parse = (buffer, options = {}) => {
 
 		const parsed = convert(key, valueBuffer, options)
 
-		if (parsed !== null) {
-			if (typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
+		if (typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
 
-			if (options.debug === true) {
-				if (key === 2) {
-					console.debug(key, contentLength, parsed.name, `${new Date(parsed.value / 1000)}${parsed.unit || ''}`, valueBuffer)
-				} else {
-					console.debug(key, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
-				}
+		if (options.debug === true) {
+			if (key === 2) {
+				console.debug(key, contentLength, parsed.name, `${new Date(parsed.value / 1000)}${parsed.unit || ''}`, valueBuffer)
+			} else {
+				console.debug(key, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 			}
-			if (options.debug || options.payload) {
-				parsed.packet = valueBuffer
-			}
-
-			values.push(parsed)
-		} else {
-			options.debug === true && console.debug(key, contentLength, 'NULL')
 		}
+		if (options.debug || options.payload) {
+			parsed.packet = valueBuffer
+		}
+
+		values.push(parsed)
 
 		i += keyLength + berHeader + berLength + contentLength // advance past key, length and value bytes
 	}
@@ -330,90 +326,66 @@ const convert = (key, buffer, options) => {
 				}
 			case 26:
 				klv.checkRequiredSize(key, buffer, 2)
-				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
-					return null
-				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
+					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
 					unit: '°'
 				}
 			case 27:
 				klv.checkRequiredSize(key, buffer, 2)
-				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
-					return null
-				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
+					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
 					unit: '°'
 				}
 			case 28:
 				klv.checkRequiredSize(key, buffer, 2)
-				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
-					return null
-				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
+					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
 					unit: '°'
 				}
 			case 29:
 				klv.checkRequiredSize(key, buffer, 2)
-				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
-					return null
-				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
+					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
 					unit: '°'
 				}
 			case 30:
 				klv.checkRequiredSize(key, buffer, 2)
-				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
-					return null
-				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
+					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
 					unit: '°'
 				}
 			case 31:
 				klv.checkRequiredSize(key, buffer, 2)
-				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
-					return null
-				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
+					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
 					unit: '°'
 				}
 			case 32:
 				klv.checkRequiredSize(key, buffer, 2)
-				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
-					return null
-				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
+					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
 					unit: '°'
 				}
 			case 33:
 				klv.checkRequiredSize(key, buffer, 2)
-				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
-					return null
-				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
+					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
 					unit: '°'
 				}
 			case 34:

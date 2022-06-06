@@ -8,7 +8,7 @@ for(const standard of standards) {
 }
 
 process.stdin.on('data', function (data) {
-	const result = klv.decode(data, standards, null, { debug: process.argv[2] === 'debug' })
+	const result = klv.decode(data, standards, null, { payload: true, debug: process.argv[2] === 'debug' })
 	for (const standard of standards) {
 		for(const packet of result[standard.name]) {
 			packets[standard.name].push(packet)
