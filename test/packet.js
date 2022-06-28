@@ -36,7 +36,7 @@ module.exports.DynamicConstantMISMMSPacketData = {
 		},
 		{ "key": 65, "name": "UAS Datalink LS Version Number", "value": 6 },
 		{ "key": 94, "name": "MIIS Core Identifier", "value": "0170f592f02373364af8aa9162c00f2eb2da16b74341000841a0be365b5ab96a3645" },
-		{ "key": 1, "name": "Checksum", "value": 15902 }
+		{ "key": 1, "name": "Checksum", "value": 15902, "valid": true }
 	]
 }
 
@@ -61,6 +61,6 @@ module.exports.DynamicOnlyMISMMSPacketData = {
 		{ "key": 24, "name": "Frame Center Longitude", "value": 29.15789012292302, "unit": "°" },
 		{ "key": 25, "name": "Frame Center Elevation", "value": 3216.0372320134275, "unit": "m" },
 		{ "key": 65, "name": "UAS Datalink LS Version Number", "value": 6 },
-		{ "key": 1, "name": "Checksum", "value": 51280 }
+		{ "key": 1, "name": "Checksum", "value": 51280, "valid": true }
 	]
 }

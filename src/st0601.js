@@ -71,6 +71,7 @@ module.exports.parse = (buffer, options = {}) => {
 
 	const checksum = values.find(klv => klv.key === 1)
 	if (!klv.isChecksumValid(packet.subarray(0, parsedLength), checksum.value)) {
+		checksum.valid = false
 		console.debug('Invalid checksum')
 		//throw new Error(`Invalid checksum`)
 	}
@@ -140,7 +141,8 @@ const convert = (key, buffer, options) => {
 				return {
 					key,
 					name: st0601data(key).name,
-					value: buffer.readUInt16BE(0)
+					value: buffer.readUInt16BE(0),
+					valid: true
 				}
 			case 2:
 				klv.checkRequiredSize(key, buffer, st0601data(key).length)
