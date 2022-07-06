@@ -9,10 +9,15 @@ for(const standard of standards) {
 
 process.stdin.on('data', function (data) {
 	const result = klv.decode(data, standards, null, { payload: true, debug: process.argv[2] === 'debug' })
+	let totalPackets = 0
 	for (const standard of standards) {
 		for(const packet of result[standard.name]) {
+			totalPackets++
 			packets[standard.name].push(packet)
 		}
+	}
+	if(totalPackets === 0) {
+		console.warn('Unknown data found', data.toString('hex'), '\n')
 	}
 }).on('end', function () {
 	for (const standard of standards) {
