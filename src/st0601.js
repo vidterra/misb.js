@@ -113,7 +113,7 @@ module.exports.assemble = (chunks) => {
 const getPayloadLengthBer = (payload) => {
 	const byteLength = payload.length / 2
 	if (byteLength > 128) { // BER long form
-		const berLength = Math.ceil(byteLength / 256)
+		const berLength = Math.ceil(byteLength / 255)
 		return `8${berLength}${byteLength.toString(16).padStart(berLength * 2, '0')}`
 	} else { // BER short form
 		return byteLength.toString(16).padStart(2, '0')
