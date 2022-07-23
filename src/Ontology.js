@@ -37,8 +37,6 @@ module.exports.parse = function (buffer, options = {}) {
 			const valueBuffer = packet.subarray(j + berHeader + berLength, j + berHeader + berLength + contentLength)
 			const parsed = convert(key, valueBuffer, options)
 
-			if (typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
-
 			if (options.debug === true) {
 				console.debug(key, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 				parsed.packet = valueBuffer

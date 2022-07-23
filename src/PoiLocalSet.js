@@ -20,10 +20,6 @@ module.exports.parse = function (buffer, options = {}) {
 		const valueBuffer = packet.subarray(i + keyPlusLength, i + keyPlusLength + valueLength)
 		const parsed = convert(key, valueBuffer, options)
 
-		if(typeof parsed.value === 'string') {
-			parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
-		}
-
 		if (options.debug === true) {
 			console.debug(key, valueLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 			parsed.packet = valueBuffer
