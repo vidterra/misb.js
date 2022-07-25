@@ -230,10 +230,18 @@ function convert(key, buffer, options) {
 			}
 			return data
 		case 13:
+			let value
+			if(buffer[0] === 0) {
+				value = buffer.swap16().toString('utf16le') // node.js only supports little endian reading
+				buffer.swap16() // return to original order
+			} else {
+				value = buffer.toString() // encoding error, utf8
+			}
+
 			return {
 				key,
 				name: 'Object Country Codes',
-				value: buffer.toString()
+				value
 			}
 		case 14:
 			return {

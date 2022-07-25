@@ -49,9 +49,7 @@ module.exports.parse = (buffer, options = {}) => {
 			throw new Error(`Invalid ST0601 buffer, not enough content key: ${key}, key length: ${keyLength}, content length: ${contentLength}`)
 		}
 
-		const parsed = convert(key, valueBuffer, options)
-
-		if (typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
+		const parsed = options.value !== false ? convert({key, buffer: valueBuffer, options}) : {key}
 
 		if (options.debug === true) {
 			if (key === 2) {
@@ -60,7 +58,7 @@ module.exports.parse = (buffer, options = {}) => {
 				console.debug(key, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 			}
 		}
-		if (options.debug || options.payload) {
+		if (options.debug || options.payload || options.value === false) {
 			parsed.packet = valueBuffer
 		}
 
@@ -70,7 +68,7 @@ module.exports.parse = (buffer, options = {}) => {
 	}
 
 	const checksum = values.find(klv => klv.key === 1)
-	if (!klv.isChecksumValid(packet.subarray(0, parsedLength), checksum.value)) {
+	if (!klv.isChecksumValid(packet.subarray(0, parsedLength), checksum.value ?? checksum.packet.readUInt16BE(0))) {
 		checksum.valid = false
 		console.debug('Invalid checksum')
 		//throw new Error(`Invalid checksum`)
@@ -133,7 +131,7 @@ const two32max = 2 ** 32 - 1
 const two32SignedMax = 2 ** 31 - 1
 const two32SignedMin = -1 * two32SignedMax
 
-const convert = (key, buffer, options) => {
+const convert = ({key, buffer, options}) => {
 	try {
 		switch (key) {
 			case 1:
