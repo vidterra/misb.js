@@ -51,6 +51,8 @@ module.exports.parse = (buffer, options = {}) => {
 
 		const parsed = options.value !== false ? convert({key, buffer: valueBuffer, options}) : {key}
 
+		if (typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
+
 		if (options.debug === true) {
 			if (key === 2) {
 				console.debug(key, contentLength, parsed.name, `${new Date(parsed.value / 1000)}${parsed.unit || ''}`, valueBuffer)
@@ -1020,6 +1022,8 @@ const st0601data = (key) => {
 			return {name: 'Sensor North Velocity'}
 		case 80:
 			return {name: 'Sensor East Velocity'}
+		case 81:
+			return {name: 'Image Horizon Pixel Pack'}
 		case 82:
 			return {name: 'Corner Latitude Point 1'}
 		case 83:

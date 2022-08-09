@@ -17,6 +17,10 @@ module.exports.parse = function (buffer, options = {}) {
 		const valueBuffer = packet.subarray(i + 2, i + 2 + length) // read content after key and length
 		const parsed = convert(key, valueBuffer, options)
 		if (parsed !== null) {
+			if (typeof parsed.value === 'string') {
+				parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
+			}
+
 			if (options.debug === true) {
 				console.debug(key, length, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 				parsed.packet = valueBuffer
@@ -231,7 +235,7 @@ function convert(key, buffer, options) {
 			return data
 		case 13:
 			let value
-			if(buffer[0] === 0 && buffer.length > 1) {
+			if (buffer[0] === 0 && buffer.length > 1) {
 				value = buffer.swap16().toString('utf16le') // node.js only supports little endian reading
 				buffer.swap16() // return to original order
 			} else {

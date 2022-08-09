@@ -69,6 +69,9 @@ module.exports.parseLS = function (buffer, options = {}) {
 			throw new Error('Invalid st0806 buffer, not enough content')
 		}
 		const parsed = convert(key, valueBuffer, options)
+		if (typeof parsed.value === 'string') {
+			parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
+		}
 
 		if (options.debug === true) {
 			if (key === 2) console.debug(key, contentLength, parsed.name, `${new Date(parsed.value / 1000)}${parsed.unit || ''}`, valueBuffer)

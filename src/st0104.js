@@ -50,6 +50,8 @@ module.exports.parse = function (buffer, options = {}) {
 		const parsed = convert(keyString, valueBuffer, options)
 
 		if (parsed !== null) {
+			if (typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
+
 			if (options.debug === true) {
 				console.debug(keyString, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
 				parsed.packet = valueBuffer
