@@ -1048,6 +1048,10 @@ const st0601data = (key) => {
 			return {name: 'MIIS Core Identifier'}
 		case 96:
 			return {name: 'Target Width Extended'}
+		case 98:
+			return {name: 'Geo-Registration Local Set'}
+		case 104:
+			return {name: 'Sensor Ellipsoid Height Extended'}
 		case 113:
 			return {name: 'Altitude AGL'}
 		case 116:

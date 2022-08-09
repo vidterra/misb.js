@@ -231,7 +231,7 @@ function convert(key, buffer, options) {
 			return data
 		case 13:
 			let value
-			if(buffer[0] === 0) {
+			if(buffer[0] === 0 && buffer.length > 1) {
 				value = buffer.swap16().toString('utf16le') // node.js only supports little endian reading
 				buffer.swap16() // return to original order
 			} else {
