@@ -271,10 +271,14 @@ function convert(key, buffer, options) {
 					value: buffer.toString('hex')
 				}
 			default:
-				if (options.debug === true) {
-					throw Error(`Key ${keyString} not found`)
+				if (options.strict === true) {
+					throw Error(`st0104 key ${key} not found`)
 				}
-				return null
+				return {
+					key,
+					name: 'Unknown',
+					value: 'Not Implemented'
+				}
 		}
 	} catch (e) {
 		throw e
