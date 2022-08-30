@@ -70,7 +70,8 @@ module.exports.parse = (buffer, options = {}) => {
 	}
 
 	const checksum = values.find(klv => klv.key === 1)
-	if (!klv.isChecksumValid(packet.subarray(0, parsedLength), checksum.value ?? checksum.packet.readUInt16BE(0))) {
+	const checksumValue = checksum.value !== undefined ? checksum.value : checksum.packet.readUInt16BE(0)
+	if (!klv.isChecksumValid(packet.subarray(0, parsedLength), checksumValue)) {
 		checksum.valid = false
 		console.debug('Invalid checksum')
 		//throw new Error(`Invalid checksum`)
