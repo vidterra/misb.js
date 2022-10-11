@@ -89,6 +89,13 @@ function convert(key, buffer, options) {
 					name: 'Target Confidence Level',
 					value: buffer.readUInt8(0)
 				}
+			case 6:
+				klv.checkMaxSize(key, buffer, 6)
+				return {
+					key,
+					name: 'Target History',
+					value: klv.readVariableUInt(buffer)
+				}
 			case 17:
 				klv.checkRequiredSize(key, buffer, 22)
 				return {
