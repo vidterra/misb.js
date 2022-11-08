@@ -39,8 +39,9 @@ module.exports.parse = function (buffer, options = {}) {
 	const values = module.exports.parseLS(buffer.slice(i, i + parsedLength), {...options, checksum: false, header: false})
 	const checksum = values.find(klv => klv.key === 1)
 	const checksumValue = checksum.value !== undefined ? checksum.value : checksum.packet.readUInt32BE(0)
-	if (!klv.is0806ChecksumValid(packet.subarray(0, packet.length - 4), checksumValue)) {
-		throw new Error('Invalid checksum')
+	if (!klv.is0806ChecksumValid(packet.subarray(0, packet.length), checksumValue)) {
+		checksum.valid = false
+		console.debug('Invalid checksum')
 	}
 
 	return values
@@ -77,6 +78,9 @@ module.exports.parseLS = function (buffer, options = {}) {
 		if (options.debug === true) {
 			if (key === 2) console.debug(key, contentLength, parsed.name, `${new Date(parsed.value / 1000)}${parsed.unit || ''}`, valueBuffer)
 			else console.debug(key, contentLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
+		}
+
+		if (options.debug || options.payload || options.value === false) {
 			parsed.packet = valueBuffer
 		}
 
@@ -85,12 +89,65 @@ module.exports.parseLS = function (buffer, options = {}) {
 		i += berHeader + berLength + contentLength + 1 // advance past key, length and value bytes
 	}
 
-	if (options.checksum !== false && !klv.is0806ChecksumValid(packet.subarray(0, packet.length), values[1].value || values[1])) { // todo fix this
-		throw new Error('Invalid checksum')
+	if (options.checksum !== false) {
+		const checksum = values.find(klv => klv.key === 1)
+		const checksumValue = checksum.value !== undefined ? checksum.value : checksum.packet.readUInt32BE(0)
+		if (!klv.is0806ChecksumValid(packet.subarray(0, packet.length), checksumValue)) {
+			checksum.valid = false
+			console.debug('Invalid checksum')
+		}
 	}
 
 	options.debug === true && options.header !== false && console.debug('-------End Parse 0806 LS---------')
 	return values
+}
+
+module.exports.encode = (items) => {
+	const chunks = items.map(klv => {
+		if (klv.key == 2) {
+			const uint = bnToBuf(klv.value, 8)
+			return {
+				key: klv.key,
+				value: uint
+			}
+		}
+		return klv
+	})
+
+	return module.exports.assemble(chunks)
+}
+
+module.exports.assemble = (chunks) => {
+	const header = module.exports.key.toString('hex')
+	let payload = ''
+	for (const chunk of chunks) {
+		if (chunk.key === 1) {
+			continue
+		}
+		const packet = typeof chunk.packet === 'string' ? chunk.packet : chunk.packet.toString('hex')
+		payload += chunk.key.toString(16).padStart(2, '0') + (packet.length / 2).toString(16).padStart(2, '0') + packet
+	}
+	const payloadWithCheckSum = payload + `010400000000`
+	const completePacketForChecksum = header + getPayloadLengthBer(payloadWithCheckSum) + payloadWithCheckSum
+
+	const checksum = klv.calculate0806Checksum(completePacketForChecksum) // pad the ending with a fake checksum
+	return completePacketForChecksum.slice(0, -8) + checksum.toString(16).padStart(8, '0') // remove 4 blank characters, 2 bytes
+}
+
+const getPayloadLengthBer = (payload) => {
+	const byteLength = payload.length / 2
+	if (byteLength > 127) { // BER long form
+		const berLength = Math.ceil(byteLength / 255)
+		return `8${berLength}${byteLength.toString(16).padStart(berLength * 2, '0')}`
+	} else { // BER short form
+		return byteLength.toString(16).padStart(2, '0')
+	}
+}
+
+const bnToBuf = (bn, size) => {
+	let hex = BigInt(bn).toString(16)
+	hex = hex.padStart(size * 2, '0')
+	return hex
 }
 
 function convert(key, buffer, options) {

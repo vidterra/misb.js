@@ -45,7 +45,7 @@ module.exports.readVariableInt = (buffer) => {
 }
 
 module.exports.calculateChecksum = (packet) => {
-	if (!Buffer.isBuffer(packet)) packet = Buffer.from(packet, 'ascii')
+	if (!Buffer.isBuffer(packet)) packet = Buffer.from(packet, 'hex')
 
 	let total = 0
 	for (let i = 0; i < packet.length - 2; i++) { // don't count last 2 packets of checksum value
@@ -68,16 +68,15 @@ let TABLE = [
 if (typeof Int32Array !== 'undefined') TABLE = new Int32Array(TABLE)
 
 module.exports.calculate0806Checksum = (packet) => {
-	if (!Buffer.isBuffer(packet)) packet = Buffer.from(packet, 'ascii')
+	if (!Buffer.isBuffer(packet)) packet = Buffer.from(packet, 'hex')
 
 	let crc = 0xFFFFFFFF
-	for (let index = 0; index < packet.length; index++) {
+	for (let index = 0; index < packet.length - 4; index++) {
 		const byte = packet[index]
 		crc = (crc << 8) ^ TABLE[((crc >> 24) ^ byte) & 0xFF]
 	}
 	return crc >>> 0
 }
-
 
 //https://gwg.nga.mil/misb/docs/standards/ST0806.4.pdf
 module.exports.is0806ChecksumValid = (packet, checksum) => {
