@@ -36,9 +36,10 @@ module.exports.parse = function (buffer, options = {}) {
 
 	let i = module.exports.key.length + berHeader + berLength //index of first content key
 
-	const values = module.exports.parseLS(buffer.slice(i, i + parsedLength), {...options, header: false})
-
-	if (!klv.is0806ChecksumValid(packet.subarray(0, packet.length), values[1].value || values[1])) {
+	const values = module.exports.parseLS(buffer.slice(i, i + parsedLength), {...options, checksum: false, header: false})
+	const checksum = values.find(klv => klv.key === 1)
+	const checksumValue = checksum.value !== undefined ? checksum.value : checksum.packet.readUInt32BE(0)
+	if (!klv.is0806ChecksumValid(packet.subarray(0, packet.length - 4), checksumValue)) {
 		throw new Error('Invalid checksum')
 	}
 
@@ -48,7 +49,7 @@ module.exports.parse = function (buffer, options = {}) {
 module.exports.parseLS = function (buffer, options = {}) {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
 
-	options.debug === true && options.header !== false && console.debug('-------Start Parse 0806-------')
+	options.debug === true && options.header !== false && console.debug('-------Start Parse 0806 LS-------')
 	options.debug === true && options.header !== false && process.stdout.write(`Packet ${packet.toString('hex')} ${packet.length}\n`)
 
 	const values = []
@@ -84,11 +85,11 @@ module.exports.parseLS = function (buffer, options = {}) {
 		i += berHeader + berLength + contentLength + 1 // advance past key, length and value bytes
 	}
 
-	if (!klv.is0806ChecksumValid(packet.subarray(0, packet.length), values[1].value || values[1])) {
+	if (options.checksum !== false && !klv.is0806ChecksumValid(packet.subarray(0, packet.length), values[1].value || values[1])) { // todo fix this
 		throw new Error('Invalid checksum')
 	}
 
-	options.debug === true && console.debug('-------End Parse 0806---------')
+	options.debug === true && options.header !== false && console.debug('-------End Parse 0806 LS---------')
 	return values
 }
 
@@ -99,7 +100,7 @@ function convert(key, buffer, options) {
 			return {
 				key,
 				name: st0806data(key).name,
-				value: buffer.readUInt16BE(0)
+				value: buffer.readUInt32BE(0)
 			}
 		case 2:
 			klv.checkRequiredSize(key, buffer, 8)
