@@ -63,6 +63,7 @@ function convert(key, buffer, options) {
 			case 2:
 				return {
 					key,
+					type: getTypeName(type),
 					name: LocalSet.getKeyName(id),
 					value: LocalSet.decodeValue(id, type, buffer)
 				}
@@ -78,5 +79,20 @@ function convert(key, buffer, options) {
 		}
 	} catch (e) {
 		throw e
+	}
+}
+
+const getTypeName = (type) => {
+	switch (type) {
+		case 0: // 00
+			return 'string'
+		case 64: // 01
+			return 'int'
+		case 128: // 10
+			return 'uint'
+		case 192: // 11
+			return 'experimental'
+		default:
+			case 0: // unknown
 	}
 }
