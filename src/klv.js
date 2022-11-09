@@ -194,7 +194,7 @@ module.exports.decode = (data, standards, callback, options = {}) => {
 				if (module.exports.startsWithKey(buffer, standard.key)) {
 					const {index, values, body} = module.exports.parseStandard(standard, buffer, options)
 					if (values) {
-						if (options.body) {
+						if (options.complete) {
 							packets[standard.name].push({body, values})
 						} else {
 							packets[standard.name].push(values)
