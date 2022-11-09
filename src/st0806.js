@@ -202,6 +202,7 @@ function convert(key, buffer, options) {
 				if (id && data) {
 					return {
 						key,
+						type: data.type,
 						name: `${data.name} (${id.value})`,
 						value: data.value
 					}
