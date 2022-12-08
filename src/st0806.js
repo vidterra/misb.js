@@ -89,15 +89,6 @@ module.exports.parseLS = function (buffer, options = {}) {
 		i += berHeader + berLength + contentLength + 1 // advance past key, length and value bytes
 	}
 
-	if (options.checksum !== false) {
-		const checksum = values.find(klv => klv.key === 1)
-		const checksumValue = checksum.value !== undefined ? checksum.value : checksum.packet.readUInt32BE(0)
-		if (!klv.is0806ChecksumValid(packet.subarray(0, packet.length), checksumValue)) {
-			checksum.valid = false
-			console.debug('Invalid checksum')
-		}
-	}
-
 	options.debug === true && options.header !== false && console.debug('-------End Parse 0806 LS---------')
 	return values
 }
