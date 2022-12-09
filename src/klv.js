@@ -105,7 +105,7 @@ module.exports.getKey = (buffer) => { // multiple bytes
 		throw new Error('Key buffer is not large enough to get key length')
 	}
 
-	let key = 127
+	let key = 128
 	for (let i = 0; i < keyLength; i++) {
 		key += buffer[i + 1]
 	}
