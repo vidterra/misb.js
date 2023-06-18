@@ -86,7 +86,7 @@ module.exports.encode = (items) => {
 			const uint = bnToBuf(klv.value, st0601data(klv.key).length)
 			return {
 				key: klv.key,
-				value: uint
+				packet: uint
 			}
 		}
 		return klv
