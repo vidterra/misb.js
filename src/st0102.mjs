@@ -1,5 +1,5 @@
 import * as klv from './klv.mjs';
-import {cast} from './klv.mjs';
+import {cast, asHexString} from './klv.mjs';
 
 // module.exports.name = 'st0102'
 
@@ -16,7 +16,10 @@ export function parse (buffer, options = {}) {
 		const key = packet[i]
 		const length = packet[i + 1] // todo follow BER encoding
 		// const valueBuffer = packet.subarray(i + 2, i + 2 + length) // read content after key and length
-		const valueBuffer = new DataView( packet.buffer, i + 2, length ) // read content after key and length
+		const valueBuffer = new DataView(
+		packet.buffer,
+		packet.byteOffset + i + 2,
+		length ) // read content after key and length
 
 		const parsed = convert(key, valueBuffer, options)
 		if (parsed !== null) {
@@ -26,7 +29,7 @@ export function parse (buffer, options = {}) {
 
 			if (options.debug === true) {
 				console.debug(key, length, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
-				parsed.packet = valueBuffer
+				parsed.packet = asHexString(new Uint8Array(valueBuffer.buffer, valueBuffer.byteOffset, valueBuffer.byteLength));
 			}
 
 			values.push(parsed)

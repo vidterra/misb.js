@@ -257,7 +257,7 @@ export function equals (a, b){
  */
 export function asHexString(a) {
 	return Array.prototype.map.call(a, (n)=>
-		n.toString(16).toUpperCase().padStart(2, '0')
+		n.toString(16).padStart(2, '0')
 	).join('')
 }
 

@@ -46,7 +46,7 @@ export function parse (buffer, options = {}) {
 		// const valueBuffer = packet.subarray(
 		const valueBuffer = new DataView(
 			packet.buffer,
-			i + keyLength + berHeader + berLength,
+			packet.byteOffset + i + keyLength + berHeader + berLength,
 			contentLength
 		) // read content after key and length
 
@@ -66,7 +66,7 @@ export function parse (buffer, options = {}) {
 			}
 		}
 		if (options.debug || options.payload || options.value === false) {
-			parsed.packet = valueBuffer
+			parsed.packet = asHexString(new Uint8Array(valueBuffer.buffer, valueBuffer.byteOffset, valueBuffer.byteLength));
 		}
 
 		values.push(parsed)
@@ -157,6 +157,7 @@ function  convert (key, dataview, options) {
 				}
 			case 2:
 				// klv.checkRequiredSize(key, buffer, st0601data(key).length)
+				debugger;
 				return {
 					key,
 					name: st0601data(key).name,
@@ -713,7 +714,7 @@ function  convert (key, dataview, options) {
 				return {
 					key,
 					name: st0601data(key).name,
-					value: asHexString(dataview) // todo verify this is supposed to have unicode in it
+					value: asHexString(new Uint8Array(dataview.buffer, dataview.byteOffset, dataview.byteLength)) // todo verify this is supposed to have unicode in it
 				}
 			case 96:
 				klv.checkMaxSize(key, buffer, 8)
