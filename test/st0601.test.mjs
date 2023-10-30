@@ -1,5 +1,8 @@
-const st0601 = require('../src/st0601.js')
-const packet = require('./packet.js')
+// const st0601 = require('../src/st0601.js')
+// const packet = require('./packet.js')
+import * as st0601 from '../src/st0601.mjs';
+import * as packet from './packet.mjs';
+
 
 test('Parse DynamicConstantMISMMSPacketData 0601 buffer', () => {
 	expect(st0601.parse(packet.DynamicConstantMISMMSPacketData.file)).toStrictEqual(packet.DynamicConstantMISMMSPacketData.json)

@@ -1,8 +1,10 @@
-const path = require('path')
-const fs = require('fs')
+import path from 'path';
+import fs from 'fs';
 
-module.exports.DynamicConstantMISMMSPacketData = {
-	file: fs.readFileSync(path.join(__dirname, './DynamicConstantMISMMSPacketData.bin')),
+const dirname = path.dirname(import.meta.url).replace(/^file:/, '');;
+
+export const DynamicConstantMISMMSPacketData = {
+	file: fs.readFileSync(path.join(dirname, './DynamicConstantMISMMSPacketData.bin')),
 	json: [
 		{ "key": 2, "name": "Precision Time Stamp", "value": 1231798102000000, "unit": "µs" },
 		{ "key": 3, "name": "Mission ID", "value": "Mission 12" },
@@ -40,8 +42,8 @@ module.exports.DynamicConstantMISMMSPacketData = {
 	]
 }
 
-module.exports.DynamicOnlyMISMMSPacketData = {
-	file: fs.readFileSync(path.join(__dirname, './DynamicOnlyMISMMSPacketData.bin')),
+export const DynamicOnlyMISMMSPacketData = {
+	file: fs.readFileSync(path.join(dirname, './DynamicOnlyMISMMSPacketData.bin')),
 	json: [
 		{ "key": 2, "name": "Precision Time Stamp", "value": 1231798102000000, "unit": "µs" },
 		{ "key": 5, "name": "Platform Heading Angle", "value": 159.97436484321355, "unit": "°" },
