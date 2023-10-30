@@ -201,7 +201,6 @@ function convert(key, dataview, options) {
 				};
 			case 2:
 				// klv.checkRequiredSize(key, buffer, st0601data(key).length)
-				debugger;
 				return {
 					key,
 					name: st0601data(key).name,
