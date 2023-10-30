@@ -1,4 +1,4 @@
-import {cast} from './klv.mjs';
+import { cast } from "./klv.mjs";
 
 // let LocalSet
 // try {
@@ -9,96 +9,106 @@ import {cast} from './klv.mjs';
 // 	LocalSet = require('./GenericLocalSet')
 // }
 
-import * as LocalSet from './GenericLocalSet.mjs';
+import * as LocalSet from "./GenericLocalSet.mjs";
 
-let id = null
-let type = null
+let id = null;
+let type = null;
 
-export function parse (buffer, options = {}) {
+export function parse(buffer, options = {}) {
 	const packet = cast(buffer);
 
 	//options.debug === true && console.debug('-------Start Parse User Defined Local Set-------')
 	//options.debug === true && process.stdout.write(`Buffer ${buffer.toString('hex')} ${buffer.length}\n`)
 
-	const values = []
+	const values = [];
 
-	const keyPlusLength = 2
-	let i = 0
+	const keyPlusLength = 2;
+	let i = 0;
 	while (i < packet.length) {
-		const key = packet[i]
-		const valueLength = packet[i + 1]
+		const key = packet[i];
+		const valueLength = packet[i + 1];
 
 		if (packet.length < i + keyPlusLength + valueLength) {
-			throw new Error('Invalid User Defined Local Set buffer, not enough content')
+			throw new Error("Invalid User Defined Local Set buffer, not enough content");
 		}
 
-		const valueBuffer = packet.subarray(i + keyPlusLength, i + keyPlusLength + valueLength)
-		const parsed = convert(key, valueBuffer, options)
+		const valueBuffer = packet.subarray(
+			i + keyPlusLength,
+			i + keyPlusLength + valueLength
+		);
+		const parsed = convert(key, valueBuffer, options);
 
 		if (parsed !== null) {
-			if (typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
+			if (typeof parsed.value === "string")
+				parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, "");
 
 			if (options.debug === true) {
-				console.debug(key, valueLength, parsed.name, `${parsed.value}${parsed.unit || ''}`, valueBuffer)
-				parsed.packet = valueBuffer
+				console.debug(
+					key,
+					valueLength,
+					parsed.name,
+					`${parsed.value}${parsed.unit || ""}`,
+					valueBuffer
+				);
+				parsed.packet = valueBuffer;
 			}
 		} else {
-			options.debug === true && console.debug(key, contentLength, 'NULL')
+			options.debug === true && console.debug(key, contentLength, "NULL");
 		}
-		values.push(parsed)
+		values.push(parsed);
 
-		i += keyPlusLength + valueLength // advance past key, length and value bytes
+		i += keyPlusLength + valueLength; // advance past key, length and value bytes
 	}
 	//options.debug === true && console.debug('-------End Parse User Defined Local Set---------')
 
-	return values
+	return values;
 }
 
 function convert(key, buffer, options) {
 	try {
 		switch (key) {
 			case 1:
-				const value = buffer.readUInt8(0)
-				id = value & 0b00111111 // this must be set before key 2 is read
-				type = value & 0b11000000 // this must be set before key 2 is read
+				const value = buffer.readUInt8(0);
+				id = value & 0b00111111; // this must be set before key 2 is read
+				type = value & 0b11000000; // this must be set before key 2 is read
 				return {
 					key,
-					name: 'ID',
-					value: id
-				}
+					name: "ID",
+					value: id,
+				};
 			case 2:
 				return {
 					key,
 					type: getTypeName(type),
 					name: LocalSet.getKeyName(id),
-					value: LocalSet.decodeValue(id, type, buffer)
-				}
+					value: LocalSet.decodeValue(id, type, buffer),
+				};
 			default:
 				if (options.debug === true) {
 					//throw Error(`Key ${key} not found`)
 				}
 				return {
 					key,
-					name: 'Unknown',
-					value: buffer.toString()
-				}
+					name: "Unknown",
+					value: buffer.toString(),
+				};
 		}
 	} catch (e) {
-		throw e
+		throw e;
 	}
 }
 
 const getTypeName = (type) => {
 	switch (type) {
 		case 0: // 00
-			return 'string'
+			return "string";
 		case 64: // 01
-			return 'int'
+			return "int";
 		case 128: // 10
-			return 'uint'
+			return "uint";
 		case 192: // 11
-			return 'experimental'
+			return "experimental";
 		default:
-			case 0: // unknown
+		case 0: // unknown
 	}
-}
+};
