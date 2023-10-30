@@ -774,7 +774,8 @@ function convert(key, dataview, options) {
 				};
 			case 82:
 				// klv.checkRequiredSize(key, buffer, 4)
-				if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				// if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				if (dataview.getUint16(0, false) === 0x8000) {
 					return null;
 				}
 				return {
@@ -789,7 +790,8 @@ function convert(key, dataview, options) {
 				};
 			case 83:
 				// klv.checkRequiredSize(key, buffer, 4)
-				if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				// if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				if (dataview.getUint16(0, false) === 0x8000) {
 					return null;
 				}
 				return {
@@ -804,7 +806,8 @@ function convert(key, dataview, options) {
 				};
 			case 84:
 				// klv.checkRequiredSize(key, buffer, 4)
-				if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				// if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				if (dataview.getUint16(0, false) === 0x8000) {
 					return null;
 				}
 				return {
@@ -819,7 +822,8 @@ function convert(key, dataview, options) {
 				};
 			case 85:
 				// klv.checkRequiredSize(key, buffer, 4)
-				if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				// if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				if (dataview.getUint16(0, false) === 0x8000) {
 					return null;
 				}
 				return {
@@ -834,7 +838,8 @@ function convert(key, dataview, options) {
 				};
 			case 86:
 				// klv.checkRequiredSize(key, buffer, 4)
-				if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				// if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				if (dataview.getUint16(0, false) === 0x8000) {
 					return null;
 				}
 				return {
@@ -849,7 +854,8 @@ function convert(key, dataview, options) {
 				};
 			case 87:
 				// klv.checkRequiredSize(key, buffer, 4)
-				if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				// if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				if (dataview.getUint16(0, false) === 0x8000) {
 					return null;
 				}
 				return {
@@ -864,7 +870,8 @@ function convert(key, dataview, options) {
 				};
 			case 88:
 				// klv.checkRequiredSize(key, buffer, 4)
-				if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				// if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				if (dataview.getUint16(0, false) === 0x8000) {
 					return null;
 				}
 				return {
@@ -879,7 +886,8 @@ function convert(key, dataview, options) {
 				};
 			case 89:
 				// klv.checkRequiredSize(key, buffer, 4)
-				if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				// if (buffer.compare(Buffer.from("8000", "hex")) === 0) {
+				if (dataview.getUint16(0, false) === 0x8000) {
 					return null;
 				}
 				return {
