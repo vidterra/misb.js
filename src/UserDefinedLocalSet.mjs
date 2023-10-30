@@ -1,15 +1,21 @@
-let LocalSet
-try {
-	LocalSet = require('./CustomLocalSet')
-} catch (e) {
-	LocalSet = require('./GenericLocalSet')
-}
+import {cast} from './klv.mjs';
+
+// let LocalSet
+// try {
+// 	// File does not exist in repo, therefore it's safe to assume it doesn't exist.
+// 	// TODO: Define a mechanism for adding/replacing local sets at runtime
+// 	LocalSet = require('./CustomLocalSet')
+// } catch (e) {
+// 	LocalSet = require('./GenericLocalSet')
+// }
+
+import * as LocalSet from './GenericLocalSet.mjs';
 
 let id = null
 let type = null
 
-module.exports.parse = function (buffer, options = {}) {
-	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
+export function parse (buffer, options = {}) {
+	const packet = cast(buffer);
 
 	//options.debug === true && console.debug('-------Start Parse User Defined Local Set-------')
 	//options.debug === true && process.stdout.write(`Buffer ${buffer.toString('hex')} ${buffer.length}\n`)

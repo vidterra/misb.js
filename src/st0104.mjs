@@ -1,37 +1,37 @@
-const klv = require('./klv')
+import * as klv from './klv.mjs';
+import {cast, startsWith} from './klv.mjs';
 
-module.exports.name = 'st0104'
-module.exports.key = Buffer.from('060e2b34020101010e01010201010000', 'hex')
-module.exports.minSize = 31
+// module.exports.name = 'st0104'
+export const key = cast('060e2b34020101010e01010201010000')
+export const minSize = 31
 
-module.exports.parse = function (buffer, options = {}) {
-	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
+export function parse (buffer, options = {}) {
+	const packet = cast(buffer);
 
 	options.debug === true && console.debug('-------Start Parse 0104-------')
 	options.debug === true && process.stdout.write(`Packet ${packet.toString('hex')} ${packet.length}\n`)
 
-	if (packet.length < module.exports.minSize) { // must have a 16 byte key, 1 byte BER, 10 byte timestamp, 4 byte checksum
+	if (packet.length < minSize) { // must have a 16 byte key, 1 byte BER, 10 byte timestamp, 4 byte checksum
 		throw new Error('Buffer has no content to read')
 	}
 
-	const val = module.exports.key.compare(packet, 0, module.exports.key.length) // compare first 16 bytes before BER
-	if (val !== 0) {
+	if (!startsWith(packet, key)) { // compare first 16 bytes before BER
 		throw new Error('Not ST0104')
 	}
 
-	let {berHeader, berLength, contentLength} = klv.getBer(packet[module.exports.key.length])
+	let {berHeader, berLength, contentLength} = klv.getBer(packet[key.length])
 	if (contentLength === null) {
-		contentLength = klv.getContentLength(packet.subarray(module.exports.key.length + berHeader, module.exports.key.length + berHeader + berLength))// read content after key and length)
+		contentLength = klv.getContentLength(packet.subarray(key.length + berHeader, key.length + berHeader + berLength))// read content after key and length)
 	}
 
-	const parsedLength = module.exports.key.length + berHeader + berLength + contentLength
+	const parsedLength = key.length + berHeader + berLength + contentLength
 	if (parsedLength > packet.length) {  // buffer length isn't long enough to read content
 		throw new Error('Buffer includes ST0104 key and BER but not content')
 	}
 
 	const values = []
 
-	let i = module.exports.key.length + berHeader + berLength //index of first content key
+	let i = key.length + berHeader + berLength //index of first content key
 	while (i < parsedLength) {
 		const key = packet.subarray(i, i + 16)
 

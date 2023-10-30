@@ -1,40 +1,40 @@
-const st0102 = require('./st0102')
-const st0806 = require('./st0806')
-const st0903 = require('./st0903')
-const klv = require('./klv')
+import * as st0102 from './st0102.mjs';
+import * as st0806 from './st0806.mjs';
+import * as st0903 from './st0903.mjs';
+import * as klv from './klv.mjs';
+import {cast, startsWith, asHexString} from './klv.mjs';
 
-module.exports.name = 'st0601'
-module.exports.key = Buffer.from('060e2b34020b01010e01030101000000', 'hex')
-module.exports.minSize = 31
+// module.exports.name = 'st0601'
+export const key = cast('060e2b34020b01010e01030101000000')
+export const minSize = 31
 
-module.exports.parse = (buffer, options = {}) => {
-	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
+export function parse (buffer, options = {}) {
+	const packet = cast(buffer);
 
 	options.debug === true && console.debug('-------Start Parse 0601-------')
 	options.debug === true && process.stdout.write(`Packet ${packet.toString('hex')} ${packet.length}\n`)
 
-	if (packet.length < module.exports.minSize) { // must have a 16 byte key, 1 byte BER, 10 byte timestamp, 4 byte checksum
+	if (packet.length < minSize) { // must have a 16 byte key, 1 byte BER, 10 byte timestamp, 4 byte checksum
 		throw new Error('Buffer has no content to read')
 	}
 
-	const val = module.exports.key.compare(packet, 0, module.exports.key.length) // compare first 16 bytes before BER
-	if (val !== 0) {
+	if (!startsWith(packet, key)) { // compare first 16 bytes before BER
 		throw new Error('Not ST0601')
 	}
 
-	let {berHeader, berLength, contentLength} = klv.getBer(packet[module.exports.key.length])
+	let {berHeader, berLength, contentLength} = klv.getBer(packet[key.length])
 	if (contentLength === null) {
-		contentLength = klv.getContentLength(packet.subarray(module.exports.key.length + berHeader, module.exports.key.length + berHeader + berLength))// read content after key and length)
+		contentLength = klv.getContentLength(packet.subarray(key.length + berHeader, key.length + berHeader + berLength))// read content after key and length)
 	}
 
-	const parsedLength = module.exports.key.length + berHeader + berLength + contentLength
+	const parsedLength = key.length + berHeader + berLength + contentLength
 	if (parsedLength > packet.length) {  // buffer length isn't long enough to read content
 		throw new Error('Buffer includes ST0601 key and BER but not content')
 	}
 
 	const values = []
 
-	let i = module.exports.key.length + berHeader + berLength //index of first content key
+	let i = key.length + berHeader + berLength //index of first content key
 	while (i < parsedLength) {
 		const {key, keyLength} = klv.getKey(packet.subarray(i, packet.length))
 
@@ -43,13 +43,18 @@ module.exports.parse = (buffer, options = {}) => {
 			contentLength = klv.getContentLength(packet.subarray(i + keyLength + berHeader, i + keyLength + berHeader + berLength))// read content after key and length // i + key.length
 		}
 
-		const valueBuffer = packet.subarray(i + keyLength + berHeader + berLength, i + keyLength + berHeader + berLength + contentLength) // read content after key and length
+		// const valueBuffer = packet.subarray(
+		const valueBuffer = new DataView(
+			packet.buffer,
+			i + keyLength + berHeader + berLength,
+			contentLength
+		) // read content after key and length
 
 		if (parsedLength < i + keyLength + berHeader + berLength + contentLength) {
 			throw new Error(`Invalid ST0601 buffer, not enough content key: ${key}, key length: ${keyLength}, content length: ${contentLength}`)
 		}
 
-		const parsed = options.value !== false ? convert({key, buffer: valueBuffer, options}) : {key}
+		const parsed = options.value !== false ? convert(key, valueBuffer, options) : {key}
 
 		if (typeof parsed.value === 'string') parsed.value = parsed.value.replace(/[^\x20-\x7E]+/g, '')
 
@@ -80,7 +85,7 @@ module.exports.parse = (buffer, options = {}) => {
 	return values
 }
 
-module.exports.encode = (items) => {
+export function encode (items) {
 	const chunks = items.map(klv => {
 		if (klv.key == 2) {
 			const uint = bnToBuf(klv.value, st0601data(klv.key).length)
@@ -92,11 +97,11 @@ module.exports.encode = (items) => {
 		return klv
 	})
 
-	return module.exports.assemble(chunks)
+	return assemble(chunks)
 }
 
-module.exports.assemble = (chunks) => {
-	const header = module.exports.key.toString('hex')
+export function assemble (chunks) {
+	const header = key.toString('hex')
 	let payload = ''
 	for (const chunk of chunks) {
 		if (chunk.key === 1) {
@@ -134,305 +139,241 @@ const two32max = 2 ** 32 - 1
 const two32SignedMax = 2 ** 31 - 1
 const two32SignedMin = -1 * two32SignedMax
 
-const convert = ({key, buffer, options}) => {
+// TODO: Keep and use a TextDecoder instance for converting UTF-8 byte sequences into JS Strings.
+
+const textDecoder = new TextDecoder();
+
+function  convert (key, dataview, options) {
+
 	try {
 		switch (key) {
 			case 1:
-				klv.checkRequiredSize(key, buffer, st0601data(key).length)
+				// klv.checkRequiredSize(key, buffer, st0601data(key).length)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: buffer.readUInt16BE(0),
+					value: dataview.getUint16(0, false),
 					valid: true
 				}
 			case 2:
-				klv.checkRequiredSize(key, buffer, st0601data(key).length)
+				// klv.checkRequiredSize(key, buffer, st0601data(key).length)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: parseFloat(buffer.readBigUInt64BE(0)),
+					value: parseFloat(dataview.getBigUint64(0, false)),
 					unit: 'µs'
 				}
 			case 3:
-				return {
-					key,
-					name: st0601data(key).name,
-					value: buffer.toString()
-				}
 			case 4:
-				return {
-					key,
-					name: st0601data(key).name,
-					value: buffer.toString()
-				}
-			case 5:
-				klv.checkRequiredSize(key, buffer, 2)
-				return {
-					key,
-					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [0, 360]),
-					unit: '°'
-				}
-			case 6:
-				klv.checkRequiredSize(key, buffer, 2)
-				return {
-					key,
-					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-20, 20]),
-					unit: '°'
-				}
-			case 7:
-				klv.checkRequiredSize(key, buffer, 2)
-				return {
-					key,
-					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-50, 50]),
-					unit: '°'
-				}
-			case 8:
-				klv.checkRequiredSize(key, buffer, 1)
-				return {
-					key,
-					name: st0601data(key).name,
-					value: buffer.readUInt8(0),
-					unit: 'm/s'
-				}
-			case 9:
-				klv.checkRequiredSize(key, buffer, 1)
-				return {
-					key,
-					name: st0601data(key).name,
-					value: buffer.readUInt8(0),
-					unit: 'm/s'
-				}
 			case 10:
-				return {
-					key,
-					name: st0601data(key).name,
-					value: buffer.toString()
-				}
 			case 11:
-				return {
-					key,
-					name: st0601data(key).name,
-					value: buffer.toString()
-				}
 			case 12:
 				return {
 					key,
 					name: st0601data(key).name,
-					value: buffer.toString()
+					value: textDecoder.decode(dataview)
 				}
-			case 13:
-				klv.checkRequiredSize(key, buffer, 4)
+			case 5:
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [0, 360]),
+					unit: '°'
+				}
+			case 6:
+				// klv.checkRequiredSize(key, buffer, 2)
+				return {
+					key,
+					name: st0601data(key).name,
+					value: klv.scale(dataview.getInt16(0, false), [two16SignedMin, two16SignedMax], [-20, 20]),
+					unit: '°'
+				}
+			case 7:
+				// klv.checkRequiredSize(key, buffer, 2)
+				return {
+					key,
+					name: st0601data(key).name,
+					value: klv.scale(dataview.getInt16(0, false), [two16SignedMin, two16SignedMax], [-50, 50]),
+					unit: '°'
+				}
+			case 8:
+				// klv.checkRequiredSize(key, buffer, 1)
+				return {
+					key,
+					name: st0601data(key).name,
+					value: dataview.getUint8(0, false),
+					unit: 'm/s'
+				}
+			case 9:
+				// klv.checkRequiredSize(key, buffer, 1)
+				return {
+					key,
+					name: st0601data(key).name,
+					value: dataview.getUint8(0, false),
+					unit: 'm/s'
+				}
+			case 13:
+				// klv.checkRequiredSize(key, buffer, 4)
+				return {
+					key,
+					name: st0601data(key).name,
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 14:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-180, 180]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-180, 180]),
 					unit: '°'
 				}
 			case 15:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [-900, 19000]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [-900, 19000]),
 					unit: 'm'
 				}
 			case 16:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [0, 180]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [0, 180]),
 					unit: '°'
 				}
 			case 17:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [0, 180]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [0, 180]),
 					unit: '°'
 				}
 			case 18:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt32BE(0), [0, two32max], [0, 360]),
+					value: klv.scale(dataview.getUint32(0, false), [0, two32max], [0, 360]),
 					unit: '°'
 				}
 			case 19:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-180, 180]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-180, 180]),
 					unit: '°'
 				}
 			case 20:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt32BE(0), [0, two32max], [0, 360]),
+					value: klv.scale(dataview.getUint32(0, false), [0, two32max], [0, 360]),
 					unit: '°'
 				}
 			case 21:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt32BE(0), [0, two32max], [0, 5000000]),
+					value: klv.scale(dataview.getUint32(0, false), [0, two32max], [0, 5000000]),
 					unit: 'm'
 				}
 			case 22:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [0, 10000]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [0, 10000]),
 					unit: 'm'
 				}
 			case 23:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 24:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-180, 180]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-180, 180]),
 					unit: '°'
 				}
 			case 25:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [-900, 19000]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [-900, 19000]),
 					unit: 'm'
 				}
 			case 26:
-				klv.checkRequiredSize(key, buffer, 2)
-				return {
-					key,
-					name: st0601data(key).name,
-					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
-					unit: '°'
-				}
 			case 27:
-				klv.checkRequiredSize(key, buffer, 2)
-				return {
-					key,
-					name: st0601data(key).name,
-					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
-					unit: '°'
-				}
 			case 28:
-				klv.checkRequiredSize(key, buffer, 2)
-				return {
-					key,
-					name: st0601data(key).name,
-					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
-					unit: '°'
-				}
 			case 29:
-				klv.checkRequiredSize(key, buffer, 2)
-				return {
-					key,
-					name: st0601data(key).name,
-					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
-					unit: '°'
-				}
 			case 30:
-				klv.checkRequiredSize(key, buffer, 2)
-				return {
-					key,
-					name: st0601data(key).name,
-					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
-					unit: '°'
-				}
 			case 31:
-				klv.checkRequiredSize(key, buffer, 2)
-				return {
-					key,
-					name: st0601data(key).name,
-					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
-					unit: '°'
-				}
 			case 32:
-				klv.checkRequiredSize(key, buffer, 2)
-				return {
-					key,
-					name: st0601data(key).name,
-					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
-					unit: '°'
-				}
 			case 33:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
+					value: buffer.compare(Buffer.from('8000', 'hex')) === 0 ? null : klv.scale(dataview.getInt16(0, false), [two16SignedMin, two16SignedMax], [-0.075, 0.075]),
 					unit: '°'
 				}
 			case 34:
-				klv.checkRequiredSize(key, buffer, 1)
+				// klv.checkRequiredSize(key, buffer, 1)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: buffer.readUInt8(0),
+					value: dataview.getUint8(0, false),
 					//unit: 'code'
 				}
 			case 35:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [0, 360]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [0, 360]),
 					unit: '°'
 				}
 			case 36:
-				klv.checkRequiredSize(key, buffer, 1)
+				// klv.checkRequiredSize(key, buffer, 1)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt8(0), [0, 255], [0, 100]),
+					value: klv.scale(dataview.getUint8(0, false), [0, 255], [0, 100]),
 					unit: 'm/s'
 				}
 			case 37:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [0, 5000]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [0, 5000]),
 					unit: 'mbar'
 				}
 			case 38:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [-900, 19000]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [-900, 19000]),
 					unit: 'm'
 				}
 			case 39:
-				klv.checkRequiredSize(key, buffer, 1)
+				// klv.checkRequiredSize(key, buffer, 1)
 				return {
 					key,
 					name: st0601data(key).name,
@@ -440,123 +381,111 @@ const convert = ({key, buffer, options}) => {
 					unit: '°C'
 				}
 			case 40:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 41:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-180, 180]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-180, 180]),
 					unit: '°'
 				}
 			case 42:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [-900, 19000]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [-900, 19000]),
 					unit: 'm'
 				}
 			case 43:
-				return {
-					key,
-					name: st0601data(key).name,
-					value: 2 * buffer.readUInt8(0),
-					unit: 'pixels'
-				}
 			case 44:
 				return {
 					key,
 					name: st0601data(key).name,
-					value: 2 * buffer.readUInt8(0),
+					value: 2 * dataview.getUint8(0, false),
 					unit: 'pixels'
 				}
 			case 45:
-				return {
-					key,
-					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [0, two16Unsigned], [0, 4095]),
-					unit: 'm'
-				}
 			case 46:
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [0, two16Unsigned], [0, 4095]),
+					value: klv.scale(dataview.getInt16(0, false), [0, two16Unsigned], [0, 4095]),
 					unit: 'm'
 				}
 			case 47:
 				return {
 					key,
 					name: st0601data(key).name,
-					value: buffer.readUInt8(0),
+					value: dataview.getUint8(0, false),
 				}
 			case 48:
 				return {
 					key,
 					name: st0601data(key).name,
-					value: st0102.parse(buffer, options)
+					value: st0102.parse(dataview, options)
 				}
 			case 50:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-20, 20]),
+					value: klv.scale(dataview.getInt16(0, false), [two16SignedMin, two16SignedMax], [-20, 20]),
 					unit: '°'
 				}
 			case 51:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-180, 180]),
+					value: klv.scale(dataview.getInt16(0, false), [two16SignedMin, two16SignedMax], [-180, 180]),
 					unit: 'm/s'
 				}
 			case 52:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-20, 20]),
+					value: klv.scale(dataview.getInt16(0, false), [two16SignedMin, two16SignedMax], [-20, 20]),
 					unit: '°'
 				}
 			case 55:
-				klv.checkRequiredSize(key, buffer, 1)
+				// klv.checkRequiredSize(key, buffer, 1)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt8(0), [0, 255], [0, 100]),
+					value: klv.scale(dataview.getUint8(0, false), [0, 255], [0, 100]),
 					unit: '%'
 				}
 			case 56:
-				klv.checkRequiredSize(key, buffer, 1)
+				// klv.checkRequiredSize(key, buffer, 1)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: buffer.readUInt8(0),
+					value: dataview.getUint8(0, false),
 					unit: 'm/s'
 				}
 			case 57:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt32BE(0), [0, two32max], [0, 5000000]),
+					value: klv.scale(dataview.getUint32(0, false), [0, two32max], [0, 5000000]),
 					unit: 'm'
 				}
 			case 58:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [0, two16Unsigned], [0, 10000]),
+					value: klv.scale(dataview.getInt16(0, false), [0, two16Unsigned], [0, 10000]),
 					unit: 'kg'
 				}
 			case 59:
@@ -566,33 +495,33 @@ const convert = ({key, buffer, options}) => {
 					value: buffer.toString()
 				}
 			case 62:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: buffer.readUInt16BE(0)
+					value: dataview.getUint16(0, false)
 				}
 			case 63:
-				klv.checkRequiredSize(key, buffer, 1)
+				// klv.checkRequiredSize(key, buffer, 1)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: buffer.readUInt8(0),
+					value: dataview.getUint8(0, false),
 				}
 			case 64:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [0, 360]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [0, 360]),
 					unit: '°'
 				}
 			case 65:
-				klv.checkRequiredSize(key, buffer, 1)
+				// klv.checkRequiredSize(key, buffer, 1)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: buffer.readUInt8(0),
+					value: dataview.getUint8(0, false),
 				}
 			case 70:
 				return {
@@ -601,19 +530,19 @@ const convert = ({key, buffer, options}) => {
 					value: buffer.toString()
 				}
 			case 71:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [0, 360]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [0, 360]),
 					unit: '°'
 				}
 			case 72:
-				klv.checkRequiredSize(key, buffer, 8)
+				// klv.checkRequiredSize(key, buffer, 8)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: parseFloat(buffer.readBigUInt64BE(0)),
+					value: parseFloat(dataview.getBigUint64(0, false)),
 					unit: 'µs'
 				}
 			case 73:
@@ -629,169 +558,162 @@ const convert = ({key, buffer, options}) => {
 					value: st0903.parseLS(buffer, options)
 				}
 			case 75:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [-900, 19000]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [-900, 19000]),
 					unit: 'm'
 				}
 			case 77:
-				klv.checkRequiredSize(key, buffer, 1)
+				// klv.checkRequiredSize(key, buffer, 1)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: buffer.readUInt8(0),
+					value: dataview.getUint8(0, false),
 				}
 			case 78:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [-900, 19000]),
+					value: klv.scale(dataview.getUint16(0, false), [0, two16Unsigned], [-900, 19000]),
 					unit: 'm'
 				}
 			case 79:
-				klv.checkRequiredSize(key, buffer, 2)
-				return {
-					key,
-					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-327, 327]),
-					unit: '°'
-				}
 			case 80:
-				klv.checkRequiredSize(key, buffer, 2)
+				// klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two16SignedMin, two16SignedMax], [-327, 327]),
+					value: klv.scale(dataview.getInt16(0, false), [two16SignedMin, two16SignedMax], [-327, 327]),
 					unit: '°'
 				}
 			case 82:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
 					return null
 				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 83:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
 					return null
 				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-180, 180]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-180, 180]),
 					unit: '°'
 				}
 			case 84:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
 					return null
 				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 85:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
 					return null
 				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-180, 180]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-180, 180]),
 					unit: '°'
 				}
 			case 86:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
 					return null
 				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 87:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
 					return null
 				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-180, 180]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-180, 180]),
 					unit: '°'
 				}
 			case 88:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
 					return null
 				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 89:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				if (buffer.compare(Buffer.from('8000', 'hex')) === 0) {
 					return null
 				}
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-180, 180]),
+					value: klv.scale(dataview.getInt32(0, false), [two32SignedMin, two32SignedMax], [-180, 180]),
 					unit: '°'
 				}
 			case 90:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(dataview.getInt16(0, false), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 91:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(dataview.getInt16(0, false), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 92:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(dataview.getInt16(0, false), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 93:
-				klv.checkRequiredSize(key, buffer, 4)
+				// klv.checkRequiredSize(key, buffer, 4)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(dataview.getInt16(0, false), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 94:
 				return {
 					key,
 					name: st0601data(key).name,
-					value: buffer.toString('hex') // todo verify this is supposed to have unicode in it
+					value: asHexString(dataview) // todo verify this is supposed to have unicode in it
 				}
 			case 96:
 				klv.checkMaxSize(key, buffer, 8)
@@ -874,11 +796,11 @@ const convert = ({key, buffer, options}) => {
 	}
 }
 
-module.exports.keys = (key) => {
+export function keys (key) {
 	return st0601data(key)
 }
 
-const st0601data = (key) => {
+function st0601data (key) {
 	if (typeof key === 'string') {
 		key = parseInt(key)
 	}

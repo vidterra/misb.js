@@ -1,11 +1,12 @@
-const klv = require('./klv')
-const Location = require('./Location')
-const vObject = require('./vObject')
-const vObjectSeries = require('./vObjectSeries')
-const vTracker = require('./vTracker')
+import * as klv from './klv.mjs';
+import * as Location from './Location.mjs';
+import * as vObject from './vObject.mjs';
+import * as  vObjectSeries from './vObjectSeries.mjs';
+import * as vTracker  from './vTracker.mjs';
+import {cast} from './klv.mjs';
 
-module.exports.parse = function (buffer, options = {}) {
-	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
+export function parse (buffer, options = {}) {
+	const packet = cast(buffer);
 
 	options.debug === true && console.debug('-------Start Parse vTarget Pack-------')
 	options.debug === true && process.stdout.write(`Buffer ${buffer.toString('hex')} ${buffer.length}\n`)

@@ -1,4 +1,5 @@
-module.exports.scale = (input, fromRange, toRange) => {
+
+export function scale (input, fromRange, toRange) {
 	const [toMin, toMax] = toRange
 	const [fromMin, fromMax] = fromRange
 
@@ -6,7 +7,7 @@ module.exports.scale = (input, fromRange, toRange) => {
 	return percent * (toMax - toMin) + toMin
 }
 
-module.exports.checkRequiredSize = (key, buffer, required) => {
+export function checkRequiredSize (key, buffer, required) {
 	// todo add option for strict mode versus not-strict
 	if (false && buffer.length !== required) {
 		throw new Error(`Key ${key} buffer ${buffer.toString('hex')} is not required size ${required}`)
@@ -15,7 +16,7 @@ module.exports.checkRequiredSize = (key, buffer, required) => {
 	return true
 }
 
-module.exports.checkMaxSize = (key, buffer, max) => {
+export function checkMaxSize (key, buffer, max) {
 	if (buffer.length > max) {
 		throw new Error(`Key ${key} buffer ${buffer.toString()} is larger than max size ${max}`)
 		//return false
@@ -23,7 +24,7 @@ module.exports.checkMaxSize = (key, buffer, max) => {
 	return true
 }
 
-module.exports.readVariableUInt = (buffer) => {
+export function readVariableUInt (buffer) {
 	let data = 0
 	for (let i = 0; i < buffer.length; i++) {
 		data += buffer[i] * 256 ** (buffer.length - i - 1)
@@ -31,7 +32,7 @@ module.exports.readVariableUInt = (buffer) => {
 	return data
 }
 
-module.exports.readVariableInt = (buffer) => {
+export function readVariableInt (buffer) {
 	let data = 0
 	for (let i = 0; i < buffer.length; i++) {
 		if (i === buffer.length - 1) {
@@ -44,8 +45,8 @@ module.exports.readVariableInt = (buffer) => {
 	return data
 }
 
-module.exports.calculateChecksum = (packet) => {
-	if (!Buffer.isBuffer(packet)) packet = Buffer.from(packet, 'hex')
+export function calculateChecksum (packet) {
+	packet = cast(packet);
 
 	let total = 0
 	for (let i = 0; i < packet.length - 2; i++) { // don't count last 2 packets of checksum value
@@ -55,8 +56,8 @@ module.exports.calculateChecksum = (packet) => {
 	return total % 65536
 }
 
-module.exports.isChecksumValid = (packet, checksum) => {
-	const toCheck = module.exports.calculateChecksum(packet)
+export function isChecksumValid (packet, checksum) {
+	const toCheck = calculateChecksum(packet)
 	if (toCheck !== checksum) console.debug(`Invalid checksum ${toCheck} !== ${checksum}`)
 	return toCheck === checksum
 }
@@ -67,8 +68,8 @@ let TABLE = [
 
 if (typeof Int32Array !== 'undefined') TABLE = new Int32Array(TABLE)
 
-module.exports.calculate0806Checksum = (packet) => {
-	if (!Buffer.isBuffer(packet)) packet = Buffer.from(packet, 'hex')
+export function calculate0806Checksum (packet) {
+	packet = cast(packet);
 
 	let crc = 0xFFFFFFFF
 	for (let index = 0; index < packet.length - 4; index++) {
@@ -79,13 +80,13 @@ module.exports.calculate0806Checksum = (packet) => {
 }
 
 //https://gwg.nga.mil/misb/docs/standards/ST0806.4.pdf
-module.exports.is0806ChecksumValid = (packet, checksum) => {
-	const toCheck = module.exports.calculate0806Checksum(packet)
+export function is0806ChecksumValid (packet, checksum) {
+	const toCheck = calculate0806Checksum(packet)
 	if (toCheck !== checksum) console.debug(`Invalid checksum ${toCheck} !== ${checksum}`)
 	return toCheck === checksum
 }
 
-module.exports.getKey = (buffer) => { // multiple bytes
+export function getKey (buffer){ // multiple bytes
 	if (buffer === undefined) {
 		throw new Error('Key is missing')
 	}
@@ -112,7 +113,7 @@ module.exports.getKey = (buffer) => { // multiple bytes
 	return {key, keyLength: keyLength + 1}
 }
 
-module.exports.getBer = (buffer) => { // single byte
+export function getBer (buffer) { // single byte
 	if (buffer === undefined) {
 		throw new Error('BER is missing')
 	}
@@ -128,7 +129,7 @@ module.exports.getBer = (buffer) => { // single byte
 	}
 }
 
-module.exports.getContentLength = (buffer) => { // multiple bytes
+export function getContentLength (buffer) { // multiple bytes
 	let contentLength = 0
 	for (let i = 0; i < buffer.length; i++) {
 		contentLength += buffer[i] * 256 ** (buffer.length - i - 1)
@@ -136,15 +137,16 @@ module.exports.getContentLength = (buffer) => { // multiple bytes
 	return contentLength
 }
 
-module.exports.startsWithKey = (data, key) => {
-	if (data.length < key.length) {
-		return false
-	}
-
-	return key.compare(data, 0, key.length) === 0
+/**
+ * Expects two Uint8Arrays as arguments.
+ *
+ * Returns `true` whenever `data` starts with `magic`, or `false` otherwise.
+ */
+export function startsWith (data, magic) {
+	return data.length >= magic.length && magic.every((byte, i) => data[i] === byte);
 }
 
-module.exports.findNextKeyIndex = (data, key) => {
+export function findNextKeyIndex (data, key) {
 	for (let i = 0; i < data.length - key.length; i++) {
 		const match = key.compare(data, i, i + key.length)
 		if (match === 0) {
@@ -154,10 +156,10 @@ module.exports.findNextKeyIndex = (data, key) => {
 	return -1
 }
 
-module.exports.parseStandard = (standard, buffer, options = {}) => {
-	let {berHeader, berLength, contentLength} = module.exports.getBer(buffer[standard.key.length])
+export function parseStandard (standard, buffer, options = {}) {
+	let {berHeader, berLength, contentLength} = getBer(buffer[standard.key.length])
 	if (contentLength === null) {
-		contentLength = module.exports.getContentLength(buffer.subarray(standard.key.length + berHeader, standard.key.length + berHeader + berLength)) // read content length after key and BER header
+		contentLength = getContentLength(buffer.subarray(standard.key.length + berHeader, standard.key.length + berHeader + berLength)) // read content length after key and BER header
 	}
 
 	const body = buffer.subarray(0, standard.key.length + berHeader + berLength + contentLength)
@@ -170,12 +172,8 @@ module.exports.parseStandard = (standard, buffer, options = {}) => {
 	}
 }
 
-module.exports.decode = (data, standards, callback, options = {}) => {
-	if (data.constructor === Uint8Array) {
-		data = Buffer.from(data)
-	} else if (typeof data === 'string') {
-		data = Buffer.from(data, 'hex')
-	}
+export function decode (data, standards, callback, options = {}) {
+	data = cast(data);
 
 	if (!standards.length) {
 		standards = [standards] // accept a single standard or an array of standards
@@ -191,8 +189,8 @@ module.exports.decode = (data, standards, callback, options = {}) => {
 
 		try {
 			for (const standard of standards) {
-				if (module.exports.startsWithKey(buffer, standard.key)) {
-					const {index, values, body} = module.exports.parseStandard(standard, buffer, options)
+				if (startsWithKey(buffer, standard.key)) {
+					const {index, values, body} = parseStandard(standard, buffer, options)
 					if (values) {
 						if (options.complete) {
 							packets[standard.name].push({body, values})
@@ -213,3 +211,53 @@ module.exports.decode = (data, standards, callback, options = {}) => {
 	}
 	return packets
 }
+
+
+/**
+ * Casts the argument into a Uint8Array.
+ *
+ * i.e. if the argument already is a Uint8Array, returns it "as is".
+ * If the argument is a string, it will be interpreted as a hexadecimal string.
+ */
+export function cast(a) {
+	if (a instanceof Uint8Array) {
+		return a;
+	} else if (typeof a === "string" ){
+		// Matches hex pairs with a regexp, then parses each pair as hex.
+		// See See https://stackoverflow.com/questions/43131242/how-to-convert-a-hexademical-string-of-data-to-an-arraybuffer-in-javascript
+		return new Uint8Array(a.match(/[\da-f]{2}/gi).map((h)=>parseInt(h, 16)));
+	} else if (a instanceof ArrayBuffer) {
+		return new Uint8Array(a);
+	} else if (a instanceof DataView) {
+		return new Uint8Array(a.buffer, a.byteOffset, a.byteLength);
+	} else {
+		throw new Error("Expected either a Uint8Array or a hexadecimal string");
+	}
+}
+
+
+
+/**
+ * Expects two Uint8Arrays as arguments.
+ *
+ * Returns `true` if both arrays have the same length and contain the same bytes;
+ * `false` otherwise.
+ */
+export function equals (a, b){
+	return a.length === b.length && a.every((byte, i) => b[i] === byte);
+}
+
+
+
+
+/**
+ * Expects a Uint8Array as argument.
+ *
+ * Returns a string representation of the array
+ */
+export function asHexString(a) {
+	return Array.prototype.map.call(a, (n)=>
+		n.toString(16).toUpperCase().padStart(2, '0')
+	).join('')
+}
+

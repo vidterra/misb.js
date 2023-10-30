@@ -1,13 +1,13 @@
-const klv = require('./klv')
+import * as klv from './klv.mjs';
 
-module.exports.getKeyName = function (key) {
+export function getKeyName (key) {
 	switch (key) {
 		default:
 			return 'User Defined LS'
 	}
 }
 
-module.exports.decodeValue = function (key, type, buffer) {
+export function decodeValue (key, type, buffer) {
 	switch (type) {
 		case 0:
 			return buffer.toString()

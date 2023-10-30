@@ -1,9 +1,10 @@
-const klv = require('./klv')
+import * as klv from './klv.mjs';
+import {cast} from './klv.mjs';
 
-module.exports.name = 'st0102'
+// module.exports.name = 'st0102'
 
-module.exports.parse = function (buffer, options = {}) {
-	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
+export function parse (buffer, options = {}) {
+	const packet = cast(buffer);
 
 	options.debug === true && console.debug('-------Start Parse 0102-------')
 	options.debug === true && process.stdout.write(`Packet ${packet.toString('hex')} ${packet.length}\n`)
@@ -14,7 +15,9 @@ module.exports.parse = function (buffer, options = {}) {
 	while (i < packet.length) {
 		const key = packet[i]
 		const length = packet[i + 1] // todo follow BER encoding
-		const valueBuffer = packet.subarray(i + 2, i + 2 + length) // read content after key and length
+		// const valueBuffer = packet.subarray(i + 2, i + 2 + length) // read content after key and length
+		const valueBuffer = new DataView( packet.buffer, i + 2, length ) // read content after key and length
+
 		const parsed = convert(key, valueBuffer, options)
 		if (parsed !== null) {
 			if (typeof parsed.value === 'string') {
@@ -37,16 +40,18 @@ module.exports.parse = function (buffer, options = {}) {
 	return values
 }
 
-function convert(key, buffer, options) {
+const textDecoder = new TextDecoder();
+
+function convert(key, dataview, options) {
 	const data = {
 		key
 	}
 
 	switch (key) {
 		case 1:
-			klv.checkRequiredSize(key, buffer, 1)
+			// klv.checkRequiredSize(key, buffer, 1)
 			data.name = 'Security Classification'
-			const classificationEnum = buffer.readUInt8(0)
+			const classificationEnum = dataview.getUint8(0, false)
 			switch (classificationEnum) {
 				case 0:
 					data.value = 'UNKNOWN//'
@@ -72,9 +77,9 @@ function convert(key, buffer, options) {
 			}
 			return data
 		case 2:
-			klv.checkRequiredSize(key, buffer, 1)
+			// klv.checkRequiredSize(key, buffer, 1)
 			data.name = 'Classifying Country Coding Method'
-			const countryCodingEnum = buffer.readUInt8(0)
+			const countryCodingEnum = dataview.getUint8(0, false)
 			switch (countryCodingEnum) {
 				case 1:
 					data.value = 'ISO-3166 Two Letter'
@@ -132,54 +137,54 @@ function convert(key, buffer, options) {
 			return {
 				key,
 				name: 'Classifying Country',
-				value: buffer.toString()
+				value: textDecoder.decode(dataview)
 			}
 		case 4:
 			return {
 				key,
 				name: 'Security Information',
-				value: buffer.toString()
+				value: textDecoder.decode(dataview)
 			}
 		case 5:
 			return {
 				key,
 				name: 'Caveats',
-				value: buffer.toString()
+				value: textDecoder.decode(dataview)
 			}
 		case 6:
 			return {
 				key,
 				name: 'Releasing Instructions',
-				value: buffer.toString()
+				value: textDecoder.decode(dataview)
 			}
 		case 7:
 			return {
 				key,
 				name: 'Classified By',
-				value: buffer.toString()
+				value: textDecoder.decode(dataview)
 			}
 		case 8:
 			return {
 				key,
 				name: 'Derived From',
-				value: buffer.toString()
+				value: textDecoder.decode(dataview)
 			}
 		case 9:
 			return {
 				key,
 				name: 'Classification Reason',
-				value: buffer.toString()
+				value: textDecoder.decode(dataview)
 			}
 		case 11:
 			return {
 				key,
 				name: 'Classification and Marking System',
-				value: buffer.toString()
+				value: textDecoder.decode(dataview)
 			}
 		case 12:
-			klv.checkRequiredSize(key, buffer, 1)
+			// klv.checkRequiredSize(key, buffer, 1)
 			data.name = 'Object Country Coding Method'
-			const objectCountryCodingEnum = buffer.readUInt8(0)
+			const objectCountryCodingEnum = dataview.getUint8(0, false)
 			switch (objectCountryCodingEnum) {
 				case 1:
 					data.value = 'ISO-3166 Two Letter'
@@ -235,12 +240,12 @@ function convert(key, buffer, options) {
 			return data
 		case 13:
 			let value
-			if (buffer[0] === 0 && buffer.length > 1) {
-				value = buffer.swap16().toString('utf16le') // node.js only supports little endian reading
-				buffer.swap16() // return to original order
-			} else {
-				value = buffer.toString() // encoding error, utf8
-			}
+			// if (buffer[0] === 0 && buffer.length > 1) {
+			// 	value = buffer.swap16().toString('utf16le') // node.js only supports little endian reading
+			// 	buffer.swap16() // return to original order
+			// } else {
+				value = textDecoder.decode(dataview) // encoding error, utf8
+			// }
 
 			return {
 				key,
@@ -251,34 +256,34 @@ function convert(key, buffer, options) {
 			return {
 				key,
 				name: 'Classification Comments',
-				value: buffer.toString()
+				value: textDecoder.decode(dataview)
 			}
 		case 19:
-			klv.checkRequiredSize(key, buffer, 1)
+			// klv.checkRequiredSize(key, buffer, 1)
 			return {
 				key,
 				name: 'Stream ID',
-				value: buffer.readUInt8(0)
+				value: dataview.getUint8(0, false)
 			}
 		case 20:
-			klv.checkRequiredSize(key, buffer, 2)
+			// klv.checkRequiredSize(key, buffer, 2)
 			return {
 				key,
 				name: 'Transport Stream ID',
-				value: buffer.readUInt16BE(0)
+				value: dataview.getUint16(0, false)
 			}
 		case 21:
-			klv.checkRequiredSize(key, buffer, 16)
+			// klv.checkRequiredSize(key, buffer, 16)
 			return {
 				key,
 				name: 'Item Designator ID',
-				value: buffer.toString()
+				value: textDecoder.decode(dataview)
 			}
 		case 22:
 			return {
 				key,
 				name: 'Version',
-				value: buffer.readUInt16BE(0)
+				value: dataview.getUint16(0, false)
 			}
 		default:
 			if (options.strict === true) {

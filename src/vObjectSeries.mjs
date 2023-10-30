@@ -1,7 +1,8 @@
-const vObject = require('./vObject')
+import * as vObject from './vObject.mjs';
+import {cast} from './klv.mjs';
 
-module.exports.parse = function (buffer, options = {}) {
-	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
+export function parse (buffer, options = {}) {
+	const packet = cast(buffer);
 	const values = []
 
 	options.debug === true && console.debug('-------Start Parse vObjectSeries-------')

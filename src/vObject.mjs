@@ -1,7 +1,8 @@
-const klv = require('./klv')
+import * as klv from './klv.mjs';
+import {cast} from './klv.mjs';
 
-module.exports.parse = function (buffer, options = {}) {
-	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
+export function parse (buffer, options = {}) {
+	const packet = cast(buffer);
 
 	options.debug === true && console.debug('-------Start Parse vObject-------')
 	options.debug === true && process.stdout.write(`Buffer ${buffer.toString('hex')} ${buffer.length}\n`)

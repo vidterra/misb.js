@@ -1,40 +1,40 @@
-const klv = require('./klv')
-const vTargetSeries = require('./vTargetSeries')
-const Ontology = require('./Ontology')
-const AlgorithmSeries = require('./AlgorithmSeries')
+import * as klv from './klv.mjs';
+import * as vTargetSeries from './vTargetSeries.mjs';
+import * as Ontology from './Ontology.mjs';
+import * as AlgorithmSeries from './AlgorithmSeries.mjs';
+import {cast, startsWith} from './klv.mjs';
 
-module.exports.name = 'st0903'
-module.exports.key = Buffer.from('060e2b34020b01010e01030306000000', 'hex')
-module.exports.minSize = 31
+// module.exports.name = 'st0903'
+export const key = cast('060e2b34020b01010e01030306000000')
+export const minSize = 31
 
-module.exports.parse = function (buffer, options = {}) {
-	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
+export function parse (buffer, options = {}) {
+	const packet = cast(buffer);
 
 	options.debug === true && console.debug('-------Start Parse 0903-------')
 	options.debug === true && process.stdout.write(`Packet ${packet.toString('hex')} ${packet.length}\n`)
 
-	if (packet.length < module.exports.minSize) { // must have a 16 byte key, 1 byte BER, 10 byte timestamp, 4 byte checksum
+	if (packet.length < minSize) { // must have a 16 byte key, 1 byte BER, 10 byte timestamp, 4 byte checksum
 		throw new Error('Buffer has no content to read')
 	}
 
-	const val = module.exports.key.compare(packet, 0, module.exports.key.length) // compare first 16 bytes before BER
-	if (val !== 0) {
+	if (!startsWith(packet, key)) { // compare first 16 bytes before BER
 		throw new Error('Not ST 0903')
 	}
 
-	let {berHeader, berLength, contentLength} = klv.getBer(packet[module.exports.key.length])
+	let {berHeader, berLength, contentLength} = klv.getBer(packet[key.length])
 	if (contentLength === null) {
-		contentLength = klv.getContentLength(packet.subarray(module.exports.key.length + berHeader, module.exports.key.length + berHeader + berLength))// read content after key and length
+		contentLength = klv.getContentLength(packet.subarray(key.length + berHeader, key.length + berHeader + berLength))// read content after key and length
 	}
 
-	const parsedLength = module.exports.key.length + berHeader + berLength + contentLength
+	const parsedLength = key.length + berHeader + berLength + contentLength
 	if (parsedLength > packet.length) {  // buffer length isn't long enough to read content
 		throw new Error('Buffer includes ST 0903 key and BER but not content')
 	}
 
-	let i = module.exports.key.length + berHeader + berLength //index of first content key
+	let i = key.length + berHeader + berLength //index of first content key
 
-	const values = module.exports.parseLS(buffer.slice(i, i + parsedLength), {...options, header: false})
+	const values = parseLS(buffer.slice(i, i + parsedLength), {...options, header: false})
 
 	const checksum = values.find(klv => klv.key === 1)
 	if (!klv.isChecksumValid(packet.subarray(0, parsedLength), checksum.value)) {
@@ -44,7 +44,7 @@ module.exports.parse = function (buffer, options = {}) {
 	return values
 }
 
-module.exports.parseLS = function (buffer, options = {}) {
+export function parseLS(buffer, options = {}) {
 	const packet = typeof buffer === 'string' ? Buffer.from(buffer, 'hex') : buffer
 
 	options.debug === true && options.header !== false && console.debug('-------Start Parse 0903 LS-------')

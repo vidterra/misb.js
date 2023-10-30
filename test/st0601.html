@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+  <meta charset="utf-8" />
+  <head>
+    <title>ST0601 parser</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="author" content="Iván Sánchez Ortega" />
+    <meta name="description" content="" />
+    <meta property="og:description" content="ST0601 parser" />
+
+    <style></style>
+  </head>
+  <body>
+    <div id="gleomap"></div>
+    <pre id="error-modal"></pre>
+    <script type="importmap">
+      {
+        "imports": {
+          "misb/": "../src/"
+        }
+      }
+    </script>
+    <script type="module">
+      import * as st0601 from "misb/st0601.mjs";
+
+      fetch("./DynamicOnlyMISMMSPacketData.bin")
+        .then((res) => res.arrayBuffer())
+        .then((buf) => {
+          const parsed = st0601.parse(buf);
+
+          console.log(parsed);
+        });
+
+      fetch("./DynamicConstantMISMMSPacketData.bin")
+        .then((res) => res.arrayBuffer())
+        .then((buf) => {
+          const parsed = st0601.parse(buf);
+
+          console.log(parsed);
+        });
+
+    </script>
+  </body>
+</html>
