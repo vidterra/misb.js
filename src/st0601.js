@@ -594,6 +594,22 @@ const convert = ({key, buffer, options}) => {
 					name: st0601data(key).name,
 					value: buffer.readUInt8(0),
 				}
+			case 67:
+				klv.checkRequiredSize(key, buffer, 4)
+				return {
+					key,
+					name: st0601data(key).name,
+					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					unit: '°'
+				}
+			case 68:
+				klv.checkRequiredSize(key, buffer, 4)
+				return {
+					key,
+					name: st0601data(key).name,
+					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-180, 180]),
+					unit: '°'
+				}
 			case 70:
 				return {
 					key,
@@ -629,6 +645,14 @@ const convert = ({key, buffer, options}) => {
 					value: st0903.parseLS(buffer, options)
 				}
 			case 75:
+				klv.checkRequiredSize(key, buffer, 2)
+				return {
+					key,
+					name: st0601data(key).name,
+					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [-900, 19000]),
+					unit: 'm'
+				}
+			case 76:
 				klv.checkRequiredSize(key, buffer, 2)
 				return {
 					key,
@@ -1003,6 +1027,10 @@ const st0601data = (key) => {
 			return {name: 'Platform Magnetic Heading'}
 		case 65:
 			return {name: 'UAS Datalink LS Version Number'}
+		case 67:
+			return {name: 'Alternate Platform Latitude'}
+		case 68:
+			return {name: 'Alternate Platform Longitude'}
 		case 70:
 			return {name: 'Alternate Platform Name'}
 		case 71:
@@ -1015,6 +1043,8 @@ const st0601data = (key) => {
 			return {name: 'VMTI Local Set'}
 		case 75:
 			return {name: 'Sensor Ellipsoid Height'}
+		case 76:
+			return {name: 'Alternate Platform Ellipsoid Height'}
 		case 77:
 			return {name: 'Operational Mode'}
 		case 78:
