@@ -877,7 +877,7 @@ const convert = ({key, buffer, options}) => {
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(klv.readVariableInt(buffer), [0, max], [-900, 40000]),
+					value: klv.scale(klv.readVariableInt(buffer), [min, max], [-900, 40000]),
 				}
 			case 129:
 				return {

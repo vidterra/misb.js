@@ -45,7 +45,7 @@ function convert(key, buffer, options) {
 	switch (key) {
 		case 1:
 			klv.checkRequiredSize(key, buffer, 1)
-			data.name = 'Security Classification'
+			data.name = st0102data(key).name
 			const classificationEnum = buffer.readUInt8(0)
 			switch (classificationEnum) {
 				case 0:
@@ -73,7 +73,7 @@ function convert(key, buffer, options) {
 			return data
 		case 2:
 			klv.checkRequiredSize(key, buffer, 1)
-			data.name = 'Classifying Country Coding Method'
+			data.name = st0102data(key).name
 			const countryCodingEnum = buffer.readUInt8(0)
 			switch (countryCodingEnum) {
 				case 1:
@@ -131,54 +131,54 @@ function convert(key, buffer, options) {
 		case 3:
 			return {
 				key,
-				name: 'Classifying Country',
+				name: st0102data(key).name,
 				value: buffer.toString()
 			}
 		case 4:
 			return {
 				key,
-				name: 'Security Information',
+				name: st0102data(key).name,
 				value: buffer.toString()
 			}
 		case 5:
 			return {
 				key,
-				name: 'Caveats',
+				name: st0102data(key).name,
 				value: buffer.toString()
 			}
 		case 6:
 			return {
 				key,
-				name: 'Releasing Instructions',
+				name: st0102data(key).name,
 				value: buffer.toString()
 			}
 		case 7:
 			return {
 				key,
-				name: 'Classified By',
+				name: st0102data(key).name,
 				value: buffer.toString()
 			}
 		case 8:
 			return {
 				key,
-				name: 'Derived From',
+				name: st0102data(key).name,
 				value: buffer.toString()
 			}
 		case 9:
 			return {
 				key,
-				name: 'Classification Reason',
+				name: st0102data(key).name,
 				value: buffer.toString()
 			}
 		case 11:
 			return {
 				key,
-				name: 'Classification and Marking System',
+				name: st0102data(key).name,
 				value: buffer.toString()
 			}
 		case 12:
 			klv.checkRequiredSize(key, buffer, 1)
-			data.name = 'Object Country Coding Method'
+			data.name = st0102data(key).name
 			const objectCountryCodingEnum = buffer.readUInt8(0)
 			switch (objectCountryCodingEnum) {
 				case 1:
@@ -244,40 +244,40 @@ function convert(key, buffer, options) {
 
 			return {
 				key,
-				name: 'Object Country Codes',
+				name: st0102data(key).name,
 				value
 			}
 		case 14:
 			return {
 				key,
-				name: 'Classification Comments',
+				name: st0102data(key).name,
 				value: buffer.toString()
 			}
 		case 19:
 			klv.checkRequiredSize(key, buffer, 1)
 			return {
 				key,
-				name: 'Stream ID',
+				name: st0102data(key).name,
 				value: buffer.readUInt8(0)
 			}
 		case 20:
 			klv.checkRequiredSize(key, buffer, 2)
 			return {
 				key,
-				name: 'Transport Stream ID',
+				name: st0102data(key).name,
 				value: buffer.readUInt16BE(0)
 			}
 		case 21:
 			klv.checkRequiredSize(key, buffer, 16)
 			return {
 				key,
-				name: 'Item Designator ID',
+				name: st0102data(key).name,
 				value: buffer.toString()
 			}
 		case 22:
 			return {
 				key,
-				name: 'Version',
+				name: st0102data(key).name,
 				value: buffer.readUInt16BE(0)
 			}
 		default:
@@ -286,8 +286,54 @@ function convert(key, buffer, options) {
 			}
 			return {
 				key,
-				name: 'Unknown',
+				name: st0102data(key).name,
 				value: 'Not Implemented'
 			}
+	}
+}
+
+exports.getLength = (key) => {
+	return st0102data(key).length ?? 2
+}
+
+const st0102data = (key) => {
+	if (typeof key === 'string') {
+		key = parseInt(key)
+	}
+	switch (key) {
+		case 1:
+			return {name: 'Security Classification'}
+		case 2:
+			return {name: 'Classifying Country Coding Method'}
+		case 3:
+			return {name: 'Classifying Country'}
+		case 4:
+			return {name: 'Security Information'}
+		case 5:
+			return {name: 'Caveats'}
+		case 6:
+			return {name: 'Releasing Instructions'}
+		case 7:
+			return {name: 'Classified By'}
+		case 8:
+			return {name: 'Derived From'}
+		case 9:
+			return {name: 'Classification Reason'}
+		case 11:
+			return {name: 'Classification and Marking System'}
+		case 12:
+			return {name: 'Object Country Coding Method'}
+		case 13:
+			return {name: 'Object Country Codes'}
+		case 19:
+			return {name: 'Stream ID'}
+		case 20:
+			return {name: 'Transport Stream ID'}
+		case 21:
+			return {name: 'Item Designator ID'}
+		case 22:
+			return {name: 'Version', length: 4}
+		default:
+			return {name: 'Unknown'}
 	}
 }
