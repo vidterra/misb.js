@@ -900,6 +900,69 @@ const convert = ({key, buffer, options}) => {
 	}
 }
 
+module.exports.unconvert = ({key, value}) => {
+	try {
+		switch (key) {
+			case 13:
+				const buf13 = Buffer.allocUnsafe(4)
+				buf13.writeInt32BE(klv.scale(value,  [-90, 90],[two32SignedMin, two32SignedMax]))
+				return {
+					key,
+					name: st0601data(key).name,
+					value: buf13,
+					unit: '°'
+				}
+			case 14:
+				const buf14 = Buffer.allocUnsafe(4)
+				buf14.writeInt32BE(klv.scale(value,  [-180, 180],[two32SignedMin, two32SignedMax]))
+				return {
+					key,
+					name: st0601data(key).name,
+					value: buf14,
+					unit: '°'
+				}
+			case 15:
+				const buf15 = Buffer.allocUnsafe(2)
+				buf15.writeInt16BE(klv.scale(value, [-900, 19000], [0, two16Unsigned]))
+				return {
+					key,
+					name: st0601data(key).name,
+					value: buf15,
+					unit: 'm'
+				}
+			case 23:
+				const buf23 = Buffer.allocUnsafe(4)
+				buf23.writeInt32BE(klv.scale(value,  [-90, 90],[two32SignedMin, two32SignedMax]))
+				return {
+					key,
+					name: st0601data(key).name,
+					value: buf23,
+					unit: '°'
+				}
+			case 24:
+				const buf24 = Buffer.allocUnsafe(4)
+				buf24.writeInt32BE(klv.scale(value,  [-180, 180],[two32SignedMin, two32SignedMax]))
+				return {
+					key,
+					name: st0601data(key).name,
+					value: buf24,
+					unit: '°'
+				}
+			case 25:
+				const buf25 = Buffer.allocUnsafe(2)
+				buf25.writeInt16BE(klv.scale(value, [-900, 19000], [0, two16Unsigned]))
+				return {
+					key,
+					name: st0601data(key).name,
+					value: buf25,
+					unit: 'm'
+				}
+		}
+	} catch (e) {
+		throw e
+	}
+}
+
 module.exports.keys = (key) => {
 	return st0601data(key)
 }
