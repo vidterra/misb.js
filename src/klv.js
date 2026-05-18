@@ -208,7 +208,7 @@ module.exports.decode = (data, standards, callback, options = {}) => {
 				}
 			}
 		} catch (e) {
-			console.debug(e)
+			options.debug === true && console.debug(e)
 		}
 	}
 	return packets

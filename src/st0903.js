@@ -72,7 +72,7 @@ module.exports.parseLS = function (buffer, options = {}) {
 		try {
 			parsed = convert(key, valueBuffer, options)
 		} catch (e) {
-			console.error('Error occured',e)
+			options.debug === true && console.error('Error occurred', e)
 		}
 
 		if (parsed) {
