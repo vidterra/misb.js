@@ -70,6 +70,9 @@ module.exports.parse = (buffer, options = {}) => {
 	}
 
 	const checksum = values.find(klv => klv.key === 1)
+	if (checksum === undefined) {
+		throw new Error('Invalid ST0601 packet, no checksum (key 1)')
+	}
 	const checksumValue = checksum.value !== undefined ? checksum.value : checksum.packet.readUInt16BE(0)
 	if (!klv.isChecksumValid(packet.subarray(0, parsedLength), checksumValue)) {
 		checksum.valid = false
@@ -556,7 +559,7 @@ const convert = ({key, buffer, options}) => {
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [0, two16Unsigned], [0, 10000]),
+					value: klv.scale(buffer.readUInt16BE(0), [0, two16Unsigned], [0, 10000]),
 					unit: 'kg'
 				}
 			case 59:
@@ -784,7 +787,7 @@ const convert = ({key, buffer, options}) => {
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 91:
@@ -792,7 +795,7 @@ const convert = ({key, buffer, options}) => {
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 92:
@@ -800,7 +803,7 @@ const convert = ({key, buffer, options}) => {
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
 					unit: '°'
 				}
 			case 93:
@@ -808,7 +811,7 @@ const convert = ({key, buffer, options}) => {
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(buffer.readInt16BE(0), [two32SignedMin, two32SignedMax], [-90, 90]),
+					value: klv.scale(buffer.readInt32BE(0), [two32SignedMin, two32SignedMax], [-180, 180]),
 					unit: '°'
 				}
 			case 94:
@@ -822,7 +825,7 @@ const convert = ({key, buffer, options}) => {
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(klv.readVariableUInt(buffer), [0, 2 ** (buffer.length * 8)], [0, 1500000]), //todo this is not correct
+					value: klv.imapb(buffer, 0, 1500000),
 					unit: 'm'
 				}
 			case 116:
@@ -872,12 +875,11 @@ const convert = ({key, buffer, options}) => {
 					value: 'Not Implemented'
 				}
 			case 125:
-				const min = 0
-				const max = 2 ** (8 * buffer.length - 1)
+				klv.checkMaxSize(key, buffer, 1)
 				return {
 					key,
 					name: st0601data(key).name,
-					value: klv.scale(klv.readVariableInt(buffer), [min, max], [-900, 40000]),
+					value: buffer.readUInt8(0)
 				}
 			case 129:
 				return {
@@ -1154,6 +1156,8 @@ const st0601data = (key) => {
 			return {name: 'Sensor Ellipsoid Height Extended'}
 		case 113:
 			return {name: 'Altitude AGL'}
+		case 125:
+			return {name: 'Platform Status'}
 		case 116:
 			return {name: 'Control Command Verification List'}
 		case 117:
