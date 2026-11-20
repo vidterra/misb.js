@@ -44,6 +44,24 @@ module.exports.readVariableInt = (buffer) => {
 	return data
 }
 
+// MISB ST 1201 IMAPB: an unsigned integer of buffer.length bytes mapped onto [min, max]
+// Returns null for the ST 1201 special values (most significant bit set)
+module.exports.imapb = (buffer, min, max) => {
+	if (buffer.length < 1 || buffer.length > 8) {
+		throw new Error(`IMAPB value must be 1 to 8 bytes, got ${buffer.length}`)
+	}
+	const bPow = Math.ceil(Math.log2(max - min))
+	const dPow = 8 * buffer.length - 1
+	const sR = 2 ** (bPow - dPow)
+	const sF = 2 ** (dPow - bPow)
+	const zOffset = min < 0 && max > 0 ? sF * min - Math.floor(sF * min) : 0
+	if (buffer[0] & 0x80) {
+		return null
+	}
+	const y = module.exports.readVariableUInt(buffer)
+	return sR * (y - zOffset) + min
+}
+
 module.exports.calculateChecksum = (packet) => {
 	if (!Buffer.isBuffer(packet)) packet = Buffer.from(packet, 'hex')
 
